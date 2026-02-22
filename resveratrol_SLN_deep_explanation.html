@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nano Translation Lab — SLN Protocol</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --accent1: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #f59e0b;
+    --accent4: #10b981;
+    --accent5: #f43f5e;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --border: #1e2d45;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ANIMATED BG */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 600px 400px at 20% 20%, rgba(0,212,255,0.04) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 300px at 80% 80%, rgba(124,58,237,0.05) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* HEADER */
+  header {
+    padding: 80px 0 40px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 60px;
+  }
+  .tag {
+    display: inline-block;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.3);
+    color: var(--accent1);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 2px;
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  h1 span { color: var(--accent1); }
+  .subtitle {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* STEP CARDS */
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 48px;
+    overflow: hidden;
+    animation: fadeUp 0.6s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 28px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .step-num {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .step-title { font-size: 20px; font-weight: 700; }
+  .step-temp {
+    margin-left: auto;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .step-body { padding: 32px; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 28px;
+  }
+  @media(max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+  .info-box {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 20px;
+    border-left: 3px solid;
+  }
+  .info-box h4 {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    font-family: 'Space Mono', monospace;
+  }
+  .info-box p, .info-box li {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #94a3b8;
+  }
+  .info-box ul { list-style: none; }
+  .info-box li::before { content: '→ '; color: inherit; }
+
+  /* MOLECULE DIAGRAMS */
+  .diagram-wrap {
+    background: #070b14;
+    border-radius: 10px;
+    padding: 24px;
+    margin: 24px 0;
+    border: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  .diagram-wrap h4 {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  svg text { font-family: 'Space Mono', monospace; }
+
+  /* MECHANISM HIGHLIGHT */
+  .mechanism {
+    background: linear-gradient(135deg, rgba(0,212,255,0.05), rgba(124,58,237,0.05));
+    border: 1px solid rgba(0,212,255,0.15);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 20px 0;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #94a3b8;
+  }
+  .mechanism strong { color: var(--accent1); }
+
+  /* WHAT HAPPENS BOX */
+  .what-happens {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px 0;
+  }
+  .wh-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 14px 18px;
+  }
+  .wh-icon {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .wh-text { font-size: 14px; line-height: 1.7; color: #94a3b8; }
+  .wh-text strong { color: var(--text); }
+
+  /* CRITICAL WARNING */
+  .critical {
+    background: rgba(244,63,94,0.08);
+    border: 1px solid rgba(244,63,94,0.25);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #fca5a5;
+  }
+  .critical::before { content: '⚠ CRITICAL — '; font-weight: 700; }
+
+  /* MATERIALS SECTION */
+  .materials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 32px 0;
+  }
+  .mat-card {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 20px;
+    border-top: 3px solid;
+    text-align: center;
+  }
+  .mat-icon { font-size: 32px; margin-bottom: 10px; }
+  .mat-name { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .mat-role { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* PROCESS FLOW */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+    justify-content: center;
+  }
+  .flow-step {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-family: 'Space Mono', monospace;
+    text-align: center;
+    min-width: 120px;
+  }
+  .flow-arrow { color: var(--accent1); font-size: 20px; }
+
+  /* KINETICS TABLE */
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+  th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: #94a3b8;
+    line-height: 1.6;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* SECTION DIVIDER */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 48px 0 32px;
+  }
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+  .divider-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* FINAL SUMMARY BOX */
+  .summary-box {
+    background: linear-gradient(135deg, #0f1f35, #130f25);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 12px;
+    padding: 36px;
+    margin: 48px 0;
+    text-align: center;
+  }
+  .summary-box h3 { font-size: 22px; margin-bottom: 16px; color: var(--accent1); }
+  .summary-box p { font-size: 15px; line-height: 1.9; color: #94a3b8; max-width: 700px; margin: 0 auto; }
+  .summary-box em { color: var(--accent3); font-style: normal; font-weight: 600; }
+
+  /* TOOLTIP / LABEL STYLE */
+  .label {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-right: 6px;
+  }
+
+  .animate-pulse { animation: pulse 2s infinite; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 1px solid var(--border);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 40px;
+  }
+
+  /* MOBILE RESPONSIVE */
+  @media(max-width:600px){
+    .container{padding:0 12px;}
+    header{padding:70px 0 28px;}
+    h1{font-size:clamp(20px,6vw,36px) !important;}
+    .materials-grid{grid-template-columns:1fr 1fr;}
+    .two-col{grid-template-columns:1fr;}
+    .step-header{flex-direction:column;align-items:flex-start;gap:10px;padding:18px 14px;}
+    .step-body{padding:18px 14px;}
+    .diagram-wrap{padding:14px;}
+    .diagram-wrap svg{height:auto !important;}
+    table{font-size:12px;}
+    th,td{padding:8px 10px;}
+    .info-box{padding:14px;}
+    .what-happens{gap:8px;}
+    .flow{gap:4px;}
+    .flow-step{min-width:80px;font-size:11px;padding:7px 8px;}
+    .step-temp-badge{font-size:10px;}
+    .summary-box{padding:24px 16px;}
+    .thermo-panel{grid-template-columns:1fr 1fr;}
+  }
+  @media(max-width:380px){
+    .materials-grid{grid-template-columns:1fr;}
+    .thermo-panel{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div style="position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:rgba(10,14,26,0.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,255,231,0.12);">
+  <div style="font-family:'Space Mono',monospace;font-size:clamp(9px,2vw,12px);font-weight:700;color:#00ffe7;letter-spacing:2px;">⬡ NANO TRANSLATION LAB</div>
+  <a href="hub.html" style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:rgba(0,255,231,0.6);border:1px solid rgba(0,255,231,0.2);padding:5px 12px;border-radius:4px;text-decoration:none;background:rgba(0,255,231,0.04);white-space:nowrap;">← PORTAL</a>
+</div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="tag">Pharmaceutical Nanotechnology</div>
+    <h1>Resveratrol-Loaded <span>Solid Lipid Nanoparticles</span></h1>
+    <h1 style="font-size:clamp(18px,3vw,28px); font-weight:600; color:#94a3b8; margin-top:8px;">Deep Molecular & Process Explanation</h1>
+    <p class="subtitle" style="margin-top:20px;">
+      Hot Emulsification + Ultrasonication → SLN Formation<br>
+      Every chemical interaction, every phase transition, every molecular event — explained.
+    </p>
+  </header>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- MATERIALS OVERVIEW -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="divider"><div class="divider-line"></div><span class="divider-label">System Components</span><div class="divider-line"></div></div>
+
+  <div class="materials-grid">
+    <div class="mat-card" style="border-color:#00d4ff;">
+      <div class="mat-icon">🧊</div>
+      <div class="mat-name" style="color:#00d4ff;">Stearic Acid</div>
+      <div class="mat-role">Solid lipid matrix<br>MP ≈ 69–70°C<br>Saturated C18 chain<br>Forms crystalline core</div>
+    </div>
+    <div class="mat-card" style="border-color:#f59e0b;">
+      <div class="mat-icon">💧</div>
+      <div class="mat-name" style="color:#f59e0b;">Oleic Acid</div>
+      <div class="mat-role">Liquid lipid<br>Unsaturated (1 cis double bond)<br>Disrupts crystal lattice<br>Improves drug loading</div>
+    </div>
+    <div class="mat-card" style="border-color:#f43f5e;">
+      <div class="mat-icon">🍇</div>
+      <div class="mat-name" style="color:#f43f5e;">Resveratrol</div>
+      <div class="mat-role">Active drug<br>MW 228 Da<br>Hydrophobic + polyphenolic<br>Light & O₂ sensitive</div>
+    </div>
+    <div class="mat-card" style="border-color:#10b981;">
+      <div class="mat-icon">🧴</div>
+      <div class="mat-name" style="color:#10b981;">Tween 80</div>
+      <div class="mat-role">Non-ionic surfactant<br>Lowers interfacial tension<br>Coats lipid droplets<br>Primary emulsifier</div>
+    </div>
+    <div class="mat-card" style="border-color:#7c3aed;">
+      <div class="mat-icon">🔗</div>
+      <div class="mat-name" style="color:#7c3aed;">Poloxamer 188</div>
+      <div class="mat-role">PEO-PPO-PEO copolymer<br>Steric stabilizer<br>Prevents aggregation<br>Secondary stabilizer</div>
+    </div>
+    <div class="mat-card" style="border-color:#64748b;">
+      <div class="mat-icon">⚗️</div>
+      <div class="mat-name" style="color:#94a3b8;">Ethanol</div>
+      <div class="mat-role">Organic co-solvent<br>Dissolves resveratrol<br>H-bonds with phenolic –OH<br>Removed during dialysis</div>
+    </div>
+  </div>
+
+  <!-- MOLECULAR STRUCTURES DIAGRAM -->
+  <div class="diagram-wrap">
+    <h4>Molecular Structure Overview</h4>
+    <svg width="100%" viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg">
+      <!-- Background grid -->
+      <defs>
+        <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+          <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#1a2235" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="900" height="320" fill="url(#grid)"/>
+
+      <!-- STEARIC ACID -->
+      <text x="20" y="30" fill="#00d4ff" font-size="13" font-weight="700">STEARIC ACID (C18:0)</text>
+      <text x="20" y="50" fill="#64748b" font-size="10">Fully saturated — packs tightly → ordered crystal</text>
+      <!-- Long chain -->
+      <text x="20" y="80" fill="#94a3b8" font-size="11" font-family="monospace">HOOC—CH₂—CH₂—CH₂—CH₂—CH₂—CH₂—CH₂—CH₂—CH₂—CH₂—CH₂—CH₂—CH₂—CH₂—CH₂—CH₂—CH₃</text>
+      <!-- Crystal packing -->
+      <rect x="20" y="95" width="400" height="16" rx="2" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+      <rect x="20" y="115" width="400" height="16" rx="2" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+      <rect x="20" y="135" width="400" height="16" rx="2" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+      <text x="430" y="125" fill="#64748b" font-size="10">← Tight packing</text>
+      <text x="430" y="138" fill="#64748b" font-size="10">   = less drug space</text>
+
+      <!-- OLEIC ACID -->
+      <text x="20" y="175" fill="#f59e0b" font-size="13" font-weight="700">OLEIC ACID (C18:1, cis)</text>
+      <text x="20" y="193" fill="#64748b" font-size="10">One cis double bond → BENDS chain → disrupts crystal packing</text>
+      <text x="20" y="215" fill="#94a3b8" font-size="11" font-family="monospace">HOOC—CH₂—CH₂—CH₂—CH₂—CH₂—CH₂—CH₂</text>
+      <!-- The bend -->
+      <path d="M 320 215 Q 350 235 380 215" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="none"/>
+      <text x="340" y="248" fill="#f59e0b" font-size="10">↑ cis bend</text>
+      <text x="390" y="215" fill="#94a3b8" font-size="11" font-family="monospace">—CH₂—CH₂—CH₂—CH₂—CH₂—CH₃</text>
+
+      <!-- Disrupted packing -->
+      <rect x="20" y="255" width="120" height="16" rx="2" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+      <rect x="145" y="255" width="80" height="16" rx="2" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.4)" stroke-width="1" transform="rotate(-5 185 263)"/>
+      <rect x="230" y="255" width="120" height="16" rx="2" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.3)" stroke-width="1"/>
+      <text x="360" y="267" fill="#64748b" font-size="10">← Disrupted → drug fits here</text>
+
+      <!-- RESVERATROL -->
+      <text x="600" y="30" fill="#f43f5e" font-size="13" font-weight="700">RESVERATROL</text>
+      <text x="600" y="48" fill="#64748b" font-size="10">MW 228 Da | trans isomer (active)</text>
+      <!-- Stilbene backbone simplified -->
+      <!-- Ring 1 -->
+      <polygon points="630,100 650,88 670,100 670,124 650,136 630,124" fill="none" stroke="#f43f5e" stroke-width="2"/>
+      <text x="644" y="115" fill="#f43f5e" font-size="9">A</text>
+      <!-- OH groups on ring 1 -->
+      <text x="608" y="100" fill="#10b981" font-size="10">HO</text>
+      <line x1="628" y1="100" x2="618" y2="100" stroke="#10b981" stroke-width="1.5"/>
+      <text x="608" y="124" fill="#10b981" font-size="10">HO</text>
+      <line x1="628" y1="124" x2="618" y2="124" stroke="#10b981" stroke-width="1.5"/>
+      <!-- Double bond bridge -->
+      <line x1="670" y1="112" x2="710" y2="112" stroke="#f59e0b" stroke-width="2.5"/>
+      <text x="678" y="108" fill="#f59e0b" font-size="10">=</text>
+      <!-- Ring 2 -->
+      <polygon points="710,100 730,88 750,100 750,124 730,136 710,124" fill="none" stroke="#f43f5e" stroke-width="2"/>
+      <text x="724" y="115" fill="#f43f5e" font-size="9">B</text>
+      <!-- OH on ring 2 -->
+      <text x="755" y="112" fill="#10b981" font-size="10">OH</text>
+      <line x1="750" y1="112" x2="758" y2="112" stroke="#10b981" stroke-width="1.5"/>
+
+      <!-- Labels -->
+      <text x="600" y="160" fill="#64748b" font-size="10">Ring A + B = hydrophobic aromatic core</text>
+      <text x="600" y="175" fill="#10b981" font-size="10">3x –OH = H-bond donors → ethanol affinity</text>
+      <text x="600" y="190" fill="#f59e0b" font-size="10">trans double bond = active, cis = inactive (light)</text>
+
+      <!-- Interactions box -->
+      <rect x="600" y="210" width="280" height="90" rx="6" fill="rgba(124,58,237,0.1)" stroke="rgba(124,58,237,0.3)" stroke-width="1"/>
+      <text x="615" y="228" fill="#a78bfa" font-size="11" font-weight="700">In lipid phase — interactions:</text>
+      <text x="615" y="248" fill="#94a3b8" font-size="10">• Aromatic rings ↔ hydrocarbon chains</text>
+      <text x="615" y="263" fill="#94a3b8" font-size="10">  (π–alkyl hydrophobic interaction)</text>
+      <text x="615" y="278" fill="#94a3b8" font-size="10">• –OH ↔ lipid head region (weak H-bond)</text>
+      <text x="615" y="293" fill="#94a3b8" font-size="10">• Net: molecularly dispersed in lipid core</text>
+    </svg>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- STEP 1 -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="step-card" style="animation-delay:0.1s">
+    <div class="step-header">
+      <div class="step-num" style="background:rgba(0,212,255,0.15); color:#00d4ff; border:1px solid rgba(0,212,255,0.3);">01</div>
+      <div>
+        <div class="step-title">Melt Stearic Acid — Solid → Liquid Phase Transition</div>
+        <div style="font-size:13px; color:var(--muted); margin-top:4px;">Glass vial on hot plate or water bath</div>
+      </div>
+      <div class="step-temp" style="background:rgba(244,63,94,0.1); color:#f87171; border:1px solid rgba(244,63,94,0.2);">🌡 75–80°C</div>
+    </div>
+    <div class="step-body">
+      <div class="two-col">
+        <div class="info-box" style="border-color:#00d4ff;">
+          <h4 style="color:#00d4ff;">What Physically Happens</h4>
+          <ul>
+            <li>Van der Waals forces between C18 hydrocarbon chains break down</li>
+            <li>Crystalline lattice collapses — ordered → disordered</li>
+            <li>Molecules gain translational freedom</li>
+            <li>Viscosity drops dramatically</li>
+            <li>Stearic acid becomes a clear oily liquid</li>
+          </ul>
+        </div>
+        <div class="info-box" style="border-color:#f59e0b;">
+          <h4 style="color:#f59e0b;">Why This Temperature (75–80°C)?</h4>
+          <ul>
+            <li>MP of stearic acid = 69–70°C</li>
+            <li>Process 5–10°C ABOVE MP = safety margin</li>
+            <li>Below MP → incomplete melting → particle heterogeneity</li>
+            <li>Too high (>90°C) → resveratrol thermal degradation risk</li>
+            <li>This range = optimal for fluidity + drug stability</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- CRYSTAL MELTING DIAGRAM -->
+      <div class="diagram-wrap">
+        <h4>Crystal Lattice Melting — Molecular View</h4>
+        <svg width="100%" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- SOLID STATE -->
+          <text x="80" y="25" fill="#00d4ff" font-size="13" text-anchor="middle" font-weight="700">SOLID (25°C)</text>
+          <text x="80" y="42" fill="#64748b" font-size="10" text-anchor="middle">Ordered lattice</text>
+          <!-- Ordered chains -->
+          <g fill="none" stroke="#00d4ff" stroke-width="1.5" opacity="0.7">
+            <line x1="20" y1="60" x2="20" y2="180"/>
+            <line x1="35" y1="60" x2="35" y2="180"/>
+            <line x1="50" y1="60" x2="50" y2="180"/>
+            <line x1="65" y1="60" x2="65" y2="180"/>
+            <line x1="80" y1="60" x2="80" y2="180"/>
+            <line x1="95" y1="60" x2="95" y2="180"/>
+            <line x1="110" y1="60" x2="110" y2="180"/>
+            <line x1="125" y1="60" x2="125" y2="180"/>
+            <line x1="140" y1="60" x2="140" y2="180"/>
+          </g>
+          <!-- heads (COOH) -->
+          <g fill="#00d4ff" opacity="0.8">
+            <circle cx="20" cy="58" r="5"/><circle cx="35" cy="58" r="5"/>
+            <circle cx="50" cy="58" r="5"/><circle cx="65" cy="58" r="5"/>
+            <circle cx="80" cy="58" r="5"/><circle cx="95" cy="58" r="5"/>
+            <circle cx="110" cy="58" r="5"/><circle cx="125" cy="58" r="5"/>
+            <circle cx="140" cy="58" r="5"/>
+          </g>
+          <text x="80" y="195" fill="#64748b" font-size="10" text-anchor="middle">Parallel chains, tight packing</text>
+
+          <!-- ARROW + HEAT -->
+          <path d="M 180 120 L 280 120" fill="none" stroke="#f59e0b" stroke-width="2"/>
+          <polygon points="280,115 295,120 280,125" fill="#f59e0b"/>
+          <text x="230" y="110" fill="#f59e0b" font-size="14" text-anchor="middle">🔥</text>
+          <text x="230" y="140" fill="#f59e0b" font-size="11" text-anchor="middle">Heat to 75°C</text>
+          <text x="230" y="155" fill="#64748b" font-size="10" text-anchor="middle">VdW bonds break</text>
+
+          <!-- MOLTEN STATE -->
+          <text x="560" y="25" fill="#f59e0b" font-size="13" text-anchor="middle" font-weight="700">MOLTEN (75-80°C)</text>
+          <text x="560" y="42" fill="#64748b" font-size="10" text-anchor="middle">Disordered liquid</text>
+          <!-- Disordered chains -->
+          <g fill="none" stroke="#f59e0b" stroke-width="1.5" opacity="0.7">
+            <path d="M 340 60 Q 360 90 350 120 Q 340 150 360 180"/>
+            <path d="M 370 65 Q 385 100 375 130 Q 365 160 380 180"/>
+            <path d="M 410 58 Q 395 80 405 110 Q 420 140 410 175"/>
+            <path d="M 450 62 Q 470 95 455 125 Q 440 155 460 180"/>
+            <path d="M 490 60 Q 505 85 495 115 Q 480 148 500 180"/>
+            <path d="M 530 65 Q 545 90 535 120 Q 520 150 540 175"/>
+            <path d="M 570 58 Q 585 95 575 125 Q 560 155 580 178"/>
+            <path d="M 610 62 Q 625 88 615 118 Q 600 150 620 180"/>
+            <path d="M 650 60 Q 665 92 655 122 Q 640 152 660 178"/>
+            <path d="M 690 65 Q 705 90 695 115 Q 680 145 700 178"/>
+            <path d="M 730 58 Q 745 85 735 115 Q 720 148 740 175"/>
+            <path d="M 760" y1="60" x2="760" y2="180"/>
+          </g>
+          <!-- heads scattered -->
+          <g fill="#f59e0b" opacity="0.8">
+            <circle cx="340" cy="58" r="5"/><circle cx="370" cy="63" r="5"/>
+            <circle cx="410" cy="56" r="5"/><circle cx="450" cy="60" r="5"/>
+            <circle cx="490" cy="58" r="5"/><circle cx="530" cy="63" r="5"/>
+            <circle cx="570" cy="56" r="5"/><circle cx="610" cy="60" r="5"/>
+            <circle cx="650" cy="58" r="5"/><circle cx="690" cy="63" r="5"/>
+            <circle cx="730" cy="56" r="5"/>
+          </g>
+          <!-- Drug molecules in melt -->
+          <text x="385" y="100" fill="#f43f5e" font-size="18" opacity="0.8">◆</text>
+          <text x="460" y="140" fill="#f43f5e" font-size="18" opacity="0.8">◆</text>
+          <text x="540" y="95" fill="#f43f5e" font-size="18" opacity="0.8">◆</text>
+          <text x="620" y="145" fill="#f43f5e" font-size="18" opacity="0.8">◆</text>
+          <text x="700" y="110" fill="#f43f5e" font-size="18" opacity="0.8">◆</text>
+          <text x="440" y="30" fill="#f43f5e" font-size="10" text-anchor="middle">◆ = Resveratrol dissolved in melt</text>
+          <text x="560" y="195" fill="#64748b" font-size="10" text-anchor="middle">Chains move freely — drug partitions in</text>
+        </svg>
+      </div>
+
+      <div class="mechanism">
+        <strong>Molecular Mechanism:</strong> At 75–80°C, thermal energy exceeds the Van der Waals cohesive energy holding the C18 hydrocarbon chains together. The lattice collapses and stearic acid transitions to a low-viscosity melt — now capable of <strong>dissolving resveratrol</strong> through hydrophobic partitioning. Without this melting, resveratrol (log P ≈ 3.1) cannot enter the lipid core.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- STEP 2 — Add Oleic Acid -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="step-card" style="animation-delay:0.2s">
+    <div class="step-header">
+      <div class="step-num" style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">02</div>
+      <div>
+        <div class="step-title">Add Oleic Acid — Crystal Lattice Disruption</div>
+        <div style="font-size:13px; color:var(--muted); margin-top:4px;">Mix with molten stearic acid — hydrophobic molecular blending</div>
+      </div>
+      <div class="step-temp" style="background:rgba(245,158,11,0.1); color:#f59e0b; border:1px solid rgba(245,158,11,0.2);">🌡 75–80°C</div>
+    </div>
+    <div class="step-body">
+      <div class="mechanism">
+        <strong>Why oleic acid is the secret weapon of your formulation:</strong> Pure stearic acid, when it solidifies, forms a <strong>highly ordered β-crystal polymorph</strong> — essentially a near-perfect lattice with almost no space for drug molecules. Drug gets expelled to the surface during crystallization. Oleic acid, with its <em>cis</em> double bond, acts like a molecular wedge — it <strong>cannot pack neatly</strong> between stearic acid chains, so it permanently distorts the growing crystal, creating defects, amorphous zones, and inclusion spaces where resveratrol can reside.
+      </div>
+
+      <!-- Lattice comparison diagram -->
+      <div class="diagram-wrap">
+        <h4>Crystal Lattice Disruption by Oleic Acid</h4>
+        <svg width="100%" viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg">
+          <!-- PURE STEARIC - Perfect packing -->
+          <text x="150" y="22" fill="#00d4ff" font-size="13" font-weight="700" text-anchor="middle">Pure Stearic Acid SLN</text>
+          <text x="150" y="38" fill="#f43f5e" font-size="10" text-anchor="middle">Poor drug loading — drug expelled</text>
+
+          <!-- Perfect grid of chains -->
+          <g opacity="0.85">
+            <!-- Row 1 -->
+            <rect x="20" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="42" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="64" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="86" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="108" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="130" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="152" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="174" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="196" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="218" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="240" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <!-- Row 2 -->
+            <rect x="20" y="134" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="42" y="134" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="64" y="134" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="86" y="134" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="108" y="134" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="130" y="134" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="152" y="134" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="174" y="134" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="196" y="134" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="218" y="134" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="240" y="134" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+          </g>
+          <!-- Drug expelled to surface -->
+          <text x="50" y="240" fill="#f43f5e" font-size="20">◆◆◆</text>
+          <text x="180" y="240" fill="#f43f5e" font-size="20">◆◆</text>
+          <text x="80" y="258" fill="#f43f5e" font-size="10" text-anchor="middle">Drug expelled to surface</text>
+
+          <!-- DIVIDER -->
+          <line x1="295" y1="40" x2="295" y2="270" stroke="#1e2d45" stroke-width="2"/>
+
+          <!-- WITH OLEIC ACID - Disrupted packing -->
+          <text x="540" y="22" fill="#10b981" font-size="13" font-weight="700" text-anchor="middle">+ Oleic Acid (NLC-like)</text>
+          <text x="540" y="38" fill="#10b981" font-size="10" text-anchor="middle">Higher drug loading — drug trapped inside</text>
+
+          <!-- Disrupted chains — some straight, some bent -->
+          <g opacity="0.85">
+            <rect x="315" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <!-- Oleic acid (bent) -->
+            <path d="M 337 50 L 337 95 Q 355 115 337 130 L 337 130" fill="none" stroke="#f59e0b" stroke-width="5" stroke-linecap="round"/>
+            <rect x="359" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="381" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <!-- Another bent -->
+            <path d="M 403 50 L 403 70 Q 425 95 403 115 L 403 130" fill="none" stroke="#f59e0b" stroke-width="5" stroke-linecap="round"/>
+            <rect x="425" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="447" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <path d="M 469 50 L 469 80 Q 490 105 469 125 L 469 130" fill="none" stroke="#f59e0b" stroke-width="5" stroke-linecap="round"/>
+            <rect x="491" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="513" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <path d="M 535 50 L 535 90 Q 558 110 535 128 L 535 130" fill="none" stroke="#f59e0b" stroke-width="5" stroke-linecap="round"/>
+            <rect x="557" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="579" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <path d="M 601 50 L 601 75 Q 622 100 601 120 L 601 130" fill="none" stroke="#f59e0b" stroke-width="5" stroke-linecap="round"/>
+            <rect x="623" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="645" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <path d="M 667 50 L 667 85 Q 688 108 667 128 L 667 130" fill="none" stroke="#f59e0b" stroke-width="5" stroke-linecap="round"/>
+            <rect x="689" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <rect x="711" y="50" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <!-- Row 2 -->
+            <rect x="315" y="148" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+            <path d="M 337 148 L 337 185 Q 355 205 337 225 L 337 228" fill="none" stroke="#f59e0b" stroke-width="5" stroke-linecap="round"/>
+            <rect x="359" y="148" width="18" height="80" rx="2" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+          </g>
+
+          <!-- Drug trapped in defect spaces -->
+          <text x="380" y="115" fill="#10b981" font-size="20">◆</text>
+          <text x="460" y="80" fill="#10b981" font-size="20">◆</text>
+          <text x="552" y="105" fill="#10b981" font-size="20">◆</text>
+          <text x="640" y="90" fill="#10b981" font-size="20">◆</text>
+
+          <!-- Legend -->
+          <rect x="315" y="255" width="12" height="12" fill="rgba(0,212,255,0.3)" stroke="#00d4ff" stroke-width="1"/>
+          <text x="332" y="265" fill="#94a3b8" font-size="10">Stearic acid chains</text>
+          <line x1="430" y1="261" x2="450" y2="261" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+          <text x="456" y="265" fill="#94a3b8" font-size="10">Oleic acid (bent)</text>
+          <text x="590" y="265" fill="#10b981" font-size="12">◆</text>
+          <text x="607" y="265" fill="#94a3b8" font-size="10">Resveratrol trapped</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- STEP 3+4 — Resveratrol dissolution + mixing -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="step-card" style="animation-delay:0.3s">
+    <div class="step-header">
+      <div class="step-num" style="background:rgba(244,63,94,0.15); color:#f43f5e; border:1px solid rgba(244,63,94,0.3);">03</div>
+      <div>
+        <div class="step-title">Dissolve Resveratrol in Ethanol → Add to Molten Lipid</div>
+        <div style="font-size:13px; color:var(--muted); margin-top:4px;">Drug partitioning into lipid phase — the most critical chemical event</div>
+      </div>
+      <div class="step-temp" style="background:rgba(244,63,94,0.1); color:#f87171; border:1px solid rgba(244,63,94,0.2);">🌡 75–80°C</div>
+    </div>
+    <div class="step-body">
+
+      <div class="two-col">
+        <div class="info-box" style="border-color:#f43f5e;">
+          <h4 style="color:#f43f5e;">Why Ethanol First?</h4>
+          <ul>
+            <li>Resveratrol solubility in water ≈ 0.03 mg/mL (virtually insoluble)</li>
+            <li>Resveratrol solubility in ethanol ≈ 50 mg/mL (excellent)</li>
+            <li>Ethanol forms H-bonds with phenolic –OH groups</li>
+            <li>Ethanol acts as molecular carrier to bring drug to lipid interface</li>
+            <li>Ethanol evaporates/diffuses away during later processing</li>
+          </ul>
+        </div>
+        <div class="info-box" style="border-color:#10b981;">
+          <h4 style="color:#10b981;">Drug Partitioning Mechanism</h4>
+          <ul>
+            <li>When ethanol-drug mix contacts hot lipid → partition occurs</li>
+            <li>Resveratrol log P ≈ 3.1 → strongly prefers lipid over water</li>
+            <li>Aromatic rings interact with C18 hydrocarbon chains</li>
+            <li>Drug transfers from polar ethanol → nonpolar lipid</li>
+            <li>Driving force: thermodynamic favourability (ΔG negative)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <h4>Drug Partitioning Sequence — Molecular Events</h4>
+        <svg width="100%" viewBox="0 0 780 180" xmlns="http://www.w3.org/2000/svg">
+          <!-- Step A: Drug in ethanol -->
+          <rect x="10" y="30" width="160" height="130" rx="8" fill="rgba(148,163,184,0.05)" stroke="#334155" stroke-width="1"/>
+          <text x="90" y="22" fill="#94a3b8" font-size="12" text-anchor="middle" font-weight="700">ETHANOL PHASE</text>
+          <text x="90" y="75" fill="#f43f5e" font-size="26" text-anchor="middle">◆</text>
+          <text x="90" y="100" fill="#94a3b8" font-size="9" text-anchor="middle">Resveratrol</text>
+          <!-- Ethanol molecules (simplified) -->
+          <text x="30" y="75" fill="#64748b" font-size="20">·</text>
+          <text x="50" y="90" fill="#64748b" font-size="20">·</text>
+          <text x="130" y="70" fill="#64748b" font-size="20">·</text>
+          <text x="145" y="90" fill="#64748b" font-size="20">·</text>
+          <text x="40" y="120" fill="#64748b" font-size="20">·</text>
+          <text x="140" y="115" fill="#64748b" font-size="20">·</text>
+          <text x="90" y="135" fill="#64748b" font-size="11" text-anchor="middle">H-bonds with –OH</text>
+          <text x="90" y="150" fill="#64748b" font-size="11" text-anchor="middle">of resveratrol</text>
+
+          <!-- Arrow -->
+          <path d="M 175 95 L 220 95" fill="none" stroke="#f59e0b" stroke-width="2"/>
+          <polygon points="220,90 235,95 220,100" fill="#f59e0b"/>
+          <text x="205" y="85" fill="#f59e0b" font-size="10" text-anchor="middle">Mix</text>
+          <text x="205" y="110" fill="#64748b" font-size="9" text-anchor="middle">at 75°C</text>
+
+          <!-- Step B: Partitioning at interface -->
+          <rect x="240" y="30" width="160" height="130" rx="8" fill="rgba(245,158,11,0.04)" stroke="#92400e" stroke-width="1"/>
+          <text x="320" y="22" fill="#f59e0b" font-size="12" text-anchor="middle" font-weight="700">INTERFACE</text>
+          <!-- Left half = ethanol, Right half = lipid -->
+          <rect x="240" y="30" width="80" height="130" rx="8" fill="rgba(100,116,139,0.1)"/>
+          <rect x="320" y="30" width="80" height="130" rx="8" fill="rgba(0,212,255,0.05)"/>
+          <line x1="320" y1="30" x2="320" y2="160" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,3"/>
+          <!-- Drug moving across interface -->
+          <text x="300" y="90" fill="#f43f5e" font-size="22" opacity="0.5">◆</text>
+          <text x="325" y="90" fill="#f43f5e" font-size="26">◆</text>
+          <path d="M 305 85 L 325 85" fill="none" stroke="#f43f5e" stroke-width="1.5"/>
+          <polygon points="323,80 335,85 323,90" fill="#f43f5e"/>
+          <text x="320" y="140" fill="#64748b" font-size="9" text-anchor="middle">Drug crosses</text>
+          <text x="320" y="153" fill="#64748b" font-size="9" text-anchor="middle">into lipid phase</text>
+
+          <!-- Arrow -->
+          <path d="M 405 95 L 450 95" fill="none" stroke="#10b981" stroke-width="2"/>
+          <polygon points="450,90 465,95 450,100" fill="#10b981"/>
+          <text x="432" y="85" fill="#10b981" font-size="10" text-anchor="middle">Partition</text>
+          <text x="432" y="110" fill="#64748b" font-size="9" text-anchor="middle">complete</text>
+
+          <!-- Step C: Drug in lipid -->
+          <rect x="470" y="30" width="160" height="130" rx="8" fill="rgba(0,212,255,0.04)" stroke="#0369a1" stroke-width="1"/>
+          <text x="550" y="22" fill="#00d4ff" font-size="12" text-anchor="middle" font-weight="700">LIPID PHASE</text>
+          <!-- Hydrocarbon chains -->
+          <g fill="none" stroke="#00d4ff" stroke-width="1" opacity="0.4">
+            <line x1="490" y1="40" x2="490" y2="160"/>
+            <line x1="505" y1="40" x2="505" y2="160"/>
+            <line x1="520" y1="40" x2="520" y2="160"/>
+            <line x1="535" y1="40" x2="535" y2="160"/>
+            <line x1="565" y1="40" x2="565" y2="160"/>
+            <line x1="580" y1="40" x2="580" y2="160"/>
+            <line x1="595" y1="40" x2="595" y2="160"/>
+            <line x1="610" y1="40" x2="610" y2="160"/>
+          </g>
+          <!-- Drug in lipid -->
+          <text x="548" y="108" fill="#f43f5e" font-size="28" text-anchor="middle">◆</text>
+          <text x="550" y="140" fill="#94a3b8" font-size="9" text-anchor="middle">Molecularly dispersed</text>
+          <text x="550" y="153" fill="#94a3b8" font-size="9" text-anchor="middle">π–alkyl interactions</text>
+
+          <!-- Ethanol escape -->
+          <path d="M 670 95 L 760 95" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <polygon points="760,90 775,95 760,100" fill="#64748b"/>
+          <text x="720" y="85" fill="#64748b" font-size="10" text-anchor="middle">Ethanol</text>
+          <text x="720" y="100" fill="#64748b" font-size="10" text-anchor="middle">diffuses out</text>
+        </svg>
+      </div>
+
+      <div class="critical">
+        Pour the lipid phase INTO the aqueous phase — NEVER reverse. If reversed, surfactant concentration near the forming interface is too low, droplets cannot be stabilized immediately, and you get large, polydisperse particles with poor encapsulation.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- STEP 4 — SURFACTANT / AQUEOUS PHASE -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="step-card" style="animation-delay:0.35s">
+    <div class="step-header">
+      <div class="step-num" style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3);">04</div>
+      <div>
+        <div class="step-title">Aqueous Phase — Surfactant Mechanism at the Interface</div>
+        <div style="font-size:13px; color:var(--muted); margin-top:4px;">Tween 80 + Poloxamer 188 — two different stabilization strategies</div>
+      </div>
+      <div class="step-temp" style="background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.2);">🌡 75–80°C</div>
+    </div>
+    <div class="step-body">
+      <div class="two-col">
+        <div class="info-box" style="border-color:#10b981;">
+          <h4 style="color:#10b981;">Tween 80 — Primary Emulsifier</h4>
+          <p>Tween 80 is a <strong>non-ionic surfactant</strong> with a polyoxyethylene-sorbitan head and a C18:1 (oleic) hydrophobic tail. At the lipid-water interface it acts immediately:</p>
+          <ul style="margin-top:10px;">
+            <li>Hydrophobic tail anchors INTO lipid droplet surface</li>
+            <li>Hydrophilic PEO head extends INTO water phase</li>
+            <li>Reduces interfacial tension from ~30 mN/m to &lt;1 mN/m</li>
+            <li>Prevents droplet coalescence during sonication</li>
+          </ul>
+        </div>
+        <div class="info-box" style="border-color:#7c3aed;">
+          <h4 style="color:#a78bfa;">Poloxamer 188 — Steric Stabilizer</h4>
+          <p>Poloxamer 188 is a <strong>PEO-PPO-PEO triblock copolymer</strong>. Its mechanism is different from Tween 80:</p>
+          <ul style="margin-top:10px;">
+            <li>PPO (hydrophobic middle) adsorbs onto lipid surface</li>
+            <li>PEO chains (hydrophilic ends) form a thick brush layer in water</li>
+            <li>When two nanoparticles approach → brush layers overlap → steric repulsion</li>
+            <li>Prevents aggregation for months — long-term colloidal stability</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Surfactant Interface Diagram -->
+      <div class="diagram-wrap">
+        <h4>Surfactant Arrangement at Lipid Nanoparticle Surface</h4>
+        <svg width="100%" viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg">
+          <!-- Central nanoparticle (cross-section) -->
+          <circle cx="350" cy="130" r="90" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.3)" stroke-width="2"/>
+          <text x="350" y="115" fill="#00d4ff" font-size="13" text-anchor="middle" font-weight="700">Lipid Core</text>
+          <text x="350" y="132" fill="#64748b" font-size="10" text-anchor="middle">(Stearic + Oleic)</text>
+          <!-- Resveratrol inside -->
+          <text x="320" y="155" fill="#f43f5e" font-size="18">◆</text>
+          <text x="360" y="148" fill="#f43f5e" font-size="18">◆</text>
+          <text x="370" y="165" fill="#f43f5e" font-size="18">◆</text>
+
+          <!-- TWEEN 80 molecules (8 of them around the circle) -->
+          <!-- Top -->
+          <line x1="350" y1="40" x2="350" y2="65" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="350" cy="35" r="8" fill="rgba(16,185,129,0.3)" stroke="#10b981" stroke-width="1.5"/>
+          <!-- Top-right -->
+          <line x1="413" y1="65" x2="394" y2="82" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="422" cy="58" r="8" fill="rgba(16,185,129,0.3)" stroke="#10b981" stroke-width="1.5"/>
+          <!-- Right -->
+          <line x1="440" y1="130" x2="462" y2="130" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="472" cy="130" r="8" fill="rgba(16,185,129,0.3)" stroke="#10b981" stroke-width="1.5"/>
+          <!-- Bottom-right -->
+          <line x1="413" y1="195" x2="394" y2="178" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="422" cy="202" r="8" fill="rgba(16,185,129,0.3)" stroke="#10b981" stroke-width="1.5"/>
+          <!-- Bottom -->
+          <line x1="350" y1="220" x2="350" y2="195" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="350" cy="228" r="8" fill="rgba(16,185,129,0.3)" stroke="#10b981" stroke-width="1.5"/>
+          <!-- Bottom-left -->
+          <line x1="287" y1="195" x2="306" y2="178" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="278" cy="202" r="8" fill="rgba(16,185,129,0.3)" stroke="#10b981" stroke-width="1.5"/>
+          <!-- Left -->
+          <line x1="260" y1="130" x2="238" y2="130" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="228" cy="130" r="8" fill="rgba(16,185,129,0.3)" stroke="#10b981" stroke-width="1.5"/>
+          <!-- Top-left -->
+          <line x1="287" y1="65" x2="306" y2="82" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="278" cy="58" r="8" fill="rgba(16,185,129,0.3)" stroke="#10b981" stroke-width="1.5"/>
+
+          <!-- POLOXAMER 188 — wavy arms at 4 positions -->
+          <!-- Top wavy -->
+          <path d="M 350 27 Q 340 15 350 5 Q 360 -5 350 -12" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M 350 27 Q 362 15 355 5 Q 348 -5 358 -12" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Right wavy -->
+          <path d="M 480 130 Q 495 120 508 130 Q 520 140 535 130" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M 480 130 Q 495 140 508 130 Q 520 120 535 132" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Bottom wavy -->
+          <path d="M 350 236 Q 340 248 350 258 Q 360 268 350 275" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M 350 236 Q 362 248 355 258 Q 348 268 358 275" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Left wavy -->
+          <path d="M 220 130 Q 205 120 192 130 Q 180 140 165 130" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M 220 130 Q 205 140 192 130 Q 180 120 165 132" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- Legend -->
+          <line x1="30" y1="245" x2="55" y2="245" stroke="#10b981" stroke-width="3"/>
+          <circle cx="20" cy="245" r="6" fill="rgba(16,185,129,0.3)" stroke="#10b981" stroke-width="1.5"/>
+          <text x="60" y="249" fill="#10b981" font-size="11">Tween 80 (tail → core, head → water)</text>
+          <path d="M 340 255 Q 350 248 360 255 Q 370 262 380 255" fill="none" stroke="#a78bfa" stroke-width="2.5"/>
+          <text x="390" y="259" fill="#a78bfa" font-size="11">Poloxamer 188 PEO brush (steric barrier)</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- STEP 5 — ULTRASONICATION + CAVITATION -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="step-card" style="animation-delay:0.4s">
+    <div class="step-header">
+      <div class="step-num" style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">05</div>
+      <div>
+        <div class="step-title">Ultrasonication — Acoustic Cavitation Produces Nanoparticles</div>
+        <div style="font-size:13px; color:var(--muted); margin-top:4px;">Pulse mode: 5 sec ON / 3 sec OFF — the nano-forming event</div>
+      </div>
+      <div class="step-temp" style="background:rgba(245,158,11,0.1); color:#f59e0b; border:1px solid rgba(245,158,11,0.2);">⚡ 20–40 kHz</div>
+    </div>
+    <div class="step-body">
+      <div class="mechanism">
+        <strong>Acoustic Cavitation</strong> is the core physical mechanism. The ultrasound probe vibrates at 20,000–40,000 cycles per second, creating alternating compression and rarefaction pressure waves in the liquid. During the rarefaction phase, dissolved gases come out of solution and nucleate into microscopic bubbles. During the compression phase, these bubbles collapse violently (<strong>inertial cavitation</strong>), generating local temperatures up to 5000 K, pressures of ~1000 atm, and micro-jets reaching 400 m/s — all within nanoseconds. These forces tear the micron-scale lipid droplets into nano-scale droplets.
+      </div>
+
+      <div class="diagram-wrap">
+        <h4>Cavitation Bubble Lifecycle → Nanoparticle Formation</h4>
+        <svg width="100%" viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- Stage 1: Compression -->
+          <text x="80" y="18" fill="#64748b" font-size="11" text-anchor="middle">① Compression wave</text>
+          <rect x="20" y="25" width="120" height="80" rx="6" fill="rgba(0,212,255,0.04)" stroke="#1e2d45" stroke-width="1"/>
+          <!-- Compression arrows -->
+          <path d="M 25 65 L 55 65" fill="none" stroke="#00d4ff" stroke-width="2"/>
+          <polygon points="55,60 68,65 55,70" fill="#00d4ff"/>
+          <path d="M 135 65 L 105 65" fill="none" stroke="#00d4ff" stroke-width="2"/>
+          <polygon points="105,60 92,65 105,70" fill="#00d4ff"/>
+          <!-- Liquid molecules compact -->
+          <g fill="#334155">
+            <circle cx="80" cy="55" r="6"/><circle cx="95" cy="70" r="6"/>
+            <circle cx="75" cy="72" r="6"/><circle cx="87" cy="60" r="5"/>
+          </g>
+          <text x="80" y="125" fill="#64748b" font-size="10" text-anchor="middle">Liquid compressed</text>
+
+          <!-- Arrow -->
+          <path d="M 155 65 L 195 65" fill="none" stroke="#64748b" stroke-width="1.5"/>
+          <polygon points="195,60 210,65 195,70" fill="#64748b"/>
+          <text x="175" y="55" fill="#64748b" font-size="9" text-anchor="middle">rarefaction</text>
+
+          <!-- Stage 2: Bubble nucleation -->
+          <text x="280" y="18" fill="#64748b" font-size="11" text-anchor="middle">② Bubble nucleates</text>
+          <rect x="215" y="25" width="130" height="80" rx="6" fill="rgba(0,212,255,0.04)" stroke="#1e2d45" stroke-width="1"/>
+          <circle cx="280" cy="65" r="22" fill="rgba(100,116,139,0.1)" stroke="#64748b" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <text x="280" y="69" fill="#94a3b8" font-size="10" text-anchor="middle">vapor</text>
+          <text x="280" y="125" fill="#64748b" font-size="10" text-anchor="middle">Bubble grows</text>
+
+          <!-- Arrow -->
+          <path d="M 350 65 L 390 65" fill="none" stroke="#64748b" stroke-width="1.5"/>
+          <polygon points="390,60 405,65 390,70" fill="#64748b"/>
+          <text x="370" y="55" fill="#f43f5e" font-size="9" text-anchor="middle">collapse!</text>
+
+          <!-- Stage 3: Violent collapse -->
+          <text x="475" y="18" fill="#f43f5e" font-size="11" text-anchor="middle" font-weight="700">③ Violent Collapse</text>
+          <rect x="410" y="25" width="130" height="80" rx="6" fill="rgba(244,63,94,0.04)" stroke="#7f1d1d" stroke-width="1"/>
+          <!-- Implosion lines -->
+          <g stroke="#f43f5e" stroke-width="1.5" fill="none">
+            <path d="M 475 65 m -30,0 l 8,-8"/><path d="M 475 65 m -30,0 l 8,8"/>
+            <path d="M 475 65 m 30,0 l -8,-8"/><path d="M 475 65 m 30,0 l -8,8"/>
+            <path d="M 475 65 m 0,-30 l -8,8"/><path d="M 475 65 m 0,-30 l 8,8"/>
+            <path d="M 475 65 m 0,30 l -8,-8"/><path d="M 475 65 m 0,30 l 8,-8"/>
+          </g>
+          <!-- Micro-jet -->
+          <path d="M 420 65 L 455 65" fill="none" stroke="#f59e0b" stroke-width="3"/>
+          <polygon points="455,60 470,65 455,70" fill="#f59e0b"/>
+          <text x="435" y="55" fill="#f59e0b" font-size="9">micro-jet</text>
+          <text x="475" y="125" fill="#f43f5e" font-size="10" text-anchor="middle">~5000K, ~1000 atm</text>
+
+          <!-- Arrow -->
+          <path d="M 545 65 L 585 65" fill="none" stroke="#64748b" stroke-width="1.5"/>
+          <polygon points="585,60 600,65 585,70" fill="#64748b"/>
+
+          <!-- Stage 4: Nanoparticles -->
+          <text x="670" y="18" fill="#10b981" font-size="11" text-anchor="middle" font-weight="700">④ Nanoparticles</text>
+          <rect x="605" y="25" width="160" height="80" rx="6" fill="rgba(16,185,129,0.04)" stroke="#065f46" stroke-width="1"/>
+          <!-- Multiple small droplets -->
+          <g fill="rgba(0,212,255,0.15)" stroke="#00d4ff" stroke-width="1">
+            <circle cx="635" cy="55" r="10"/><circle cx="655" cy="70" r="8"/>
+            <circle cx="672" cy="52" r="11"/><circle cx="690" cy="68" r="9"/>
+            <circle cx="710" cy="55" r="7"/><circle cx="728" cy="65" r="10"/>
+            <circle cx="645" cy="80" r="8"/><circle cx="700" cy="80" r="8"/>
+          </g>
+          <text x="685" y="125" fill="#10b981" font-size="10" text-anchor="middle">100–300 nm droplets</text>
+
+          <!-- Pulse mode explanation -->
+          <rect x="20" y="155" width="740" height="36" rx="6" fill="rgba(245,158,11,0.06)" stroke="rgba(245,158,11,0.2)" stroke-width="1"/>
+          <text x="30" y="172" fill="#f59e0b" font-size="11" font-weight="700">⚡ PULSE MODE (5s ON / 3s OFF):</text>
+          <text x="200" y="172" fill="#94a3b8" font-size="10">Prevents continuous heat buildup → protects resveratrol from thermal isomerization (trans→cis) and oxidation</text>
+          <text x="30" y="185" fill="#64748b" font-size="10">Continuous sonication = local temp &gt;90°C → drug degradation → loss of EE%. Pulse mode maintains bulk temp at ~35°C during processing.</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- STEP 6 — ICE BATH COOLING = SLN FORMATION -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="step-card" style="animation-delay:0.45s">
+    <div class="step-header">
+      <div class="step-num" style="background:rgba(0,212,255,0.15); color:#00d4ff; border:1px solid rgba(0,212,255,0.3);">06</div>
+      <div>
+        <div class="step-title">Ice Bath Cooling — The Actual SLN Formation Moment</div>
+        <div style="font-size:13px; color:var(--muted); margin-top:4px;">Hot nano-emulsion → Solid Lipid Nanoparticles via rapid crystallization</div>
+      </div>
+      <div class="step-temp" style="background:rgba(0,212,255,0.1); color:#00d4ff; border:1px solid rgba(0,212,255,0.2);">❄️ 0–4°C</div>
+    </div>
+    <div class="step-body">
+      <div class="mechanism">
+        <strong>This is the most consequential step.</strong> Everything upstream was preparation. Here, the nano-emulsion droplets transform into <strong>solid nanoparticles</strong> for the first time. The rate of cooling directly determines crystallization kinetics, which determines: crystal polymorph formed, degree of drug entrapment, particle size stability, and long-term storage behavior. <strong>Rapid cooling = high nucleation rate = smaller, more uniform crystals = better drug trapping.</strong>
+      </div>
+
+      <div class="diagram-wrap">
+        <h4>Solidification & Drug Entrapment — What Happens Inside Each Droplet</h4>
+        <svg width="100%" viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg">
+          <!-- 4 stages -->
+          <!-- Stage 1: Hot droplet -->
+          <text x="75" y="15" fill="#f59e0b" font-size="11" text-anchor="middle">Hot liquid droplet</text>
+          <circle cx="75" cy="90" r="60" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.4)" stroke-width="2" stroke-dasharray="4,3"/>
+          <!-- Random lipid chains -->
+          <g fill="none" stroke="#f59e0b" stroke-width="1.2" opacity="0.6">
+            <path d="M 45 70 Q 55 85 48 100 Q 42 115 52 125"/>
+            <path d="M 60 65 Q 70 80 65 95 Q 58 110 68 120"/>
+            <path d="M 78 62 Q 85 78 80 93 Q 74 108 84 118"/>
+            <path d="M 95 68 Q 102 83 97 98 Q 90 113 100 123"/>
+            <path d="M 110 72 Q 116 87 111 102 Q 104 117 113 127"/>
+          </g>
+          <!-- Drug scattered randomly -->
+          <text x="55" y="82" fill="#f43f5e" font-size="14">◆</text>
+          <text x="85" y="105" fill="#f43f5e" font-size="14">◆</text>
+          <text x="70" y="120" fill="#f43f5e" font-size="14">◆</text>
+          <text x="100" y="88" fill="#f43f5e" font-size="12">◆</text>
+          <text x="75" y="155" fill="#64748b" font-size="10" text-anchor="middle">Drug randomly distributed</text>
+
+          <!-- Arrow with ice -->
+          <path d="M 145 90 L 185 90" fill="none" stroke="#00d4ff" stroke-width="2"/>
+          <polygon points="185,85 200,90 185,95" fill="#00d4ff"/>
+          <text x="165" y="80" fill="#00d4ff" font-size="12" text-anchor="middle">❄️</text>
+          <text x="165" y="108" fill="#64748b" font-size="9" text-anchor="middle">Rapid cool</text>
+
+          <!-- Stage 2: Nucleation starts -->
+          <text x="270" y="15" fill="#7c3aed" font-size="11" text-anchor="middle">Nucleation begins</text>
+          <circle cx="270" cy="90" r="60" fill="rgba(0,212,255,0.04)" stroke="rgba(0,212,255,0.3)" stroke-width="2"/>
+          <!-- Crystal nucleus forming -->
+          <polygon points="260,80 280,80 285,95 270,105 255,95" fill="rgba(0,212,255,0.15)" stroke="#00d4ff" stroke-width="1.5"/>
+          <!-- Chains starting to align near nucleus -->
+          <g fill="none" stroke="#00d4ff" stroke-width="1.2" opacity="0.5">
+            <line x1="242" y1="72" x2="242" y2="110"/>
+            <line x1="254" y1="70" x2="254" y2="108"/>
+            <line x1="284" y1="70" x2="284" y2="108"/>
+            <line x1="296" y1="72" x2="296" y2="110"/>
+          </g>
+          <!-- Still some disordered chains at edges -->
+          <path d="M 220 70 Q 230 85 225 100" fill="none" stroke="#f59e0b" stroke-width="1" opacity="0.4"/>
+          <path d="M 312 72 Q 318 87 315 102" fill="none" stroke="#f59e0b" stroke-width="1" opacity="0.4"/>
+          <!-- Drug near boundary -->
+          <text x="238" y="90" fill="#f43f5e" font-size="12">◆</text>
+          <text x="295" y="93" fill="#f43f5e" font-size="12">◆</text>
+          <text x="265" y="130" fill="#f43f5e" font-size="12">◆</text>
+          <text x="270" y="155" fill="#64748b" font-size="10" text-anchor="middle">Crystal nucleus forms</text>
+
+          <!-- Arrow -->
+          <path d="M 340 90 L 375 90" fill="none" stroke="#00d4ff" stroke-width="2"/>
+          <polygon points="375,85 390,90 375,95" fill="#00d4ff"/>
+          <text x="358" y="108" fill="#64748b" font-size="9" text-anchor="middle">continue</text>
+
+          <!-- Stage 3: Crystal grows + drug trapped -->
+          <text x="470" y="15" fill="#10b981" font-size="11" text-anchor="middle">Crystallization + entrapment</text>
+          <circle cx="470" cy="90" r="60" fill="rgba(0,212,255,0.04)" stroke="rgba(0,212,255,0.3)" stroke-width="2"/>
+          <!-- Ordered crystal -->
+          <g fill="none" stroke="#00d4ff" stroke-width="1.5" opacity="0.7">
+            <line x1="440" y1="55" x2="440" y2="125"/>
+            <line x1="452" y1="55" x2="452" y2="125"/>
+            <line x1="464" y1="55" x2="464" y2="125"/>
+            <line x1="476" y1="55" x2="476" y2="125"/>
+            <line x1="488" y1="55" x2="488" y2="125"/>
+            <line x1="500" y1="55" x2="500" y2="125"/>
+          </g>
+          <!-- Oleic acid defect with drug trapped -->
+          <path d="M 464 55 L 464 80 Q 482 95 464 110 L 464 125" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+          <!-- Drug trapped in defect -->
+          <text x="474" y="100" fill="#10b981" font-size="16">◆</text>
+          <!-- Circle around trapped drug -->
+          <circle cx="483" cy="96" r="12" fill="none" stroke="#10b981" stroke-width="1.5" stroke-dasharray="2,2"/>
+          <text x="470" y="155" fill="#10b981" font-size="10" text-anchor="middle">Drug TRAPPED in defect</text>
+
+          <!-- Arrow -->
+          <path d="M 540 90 L 575 90" fill="none" stroke="#10b981" stroke-width="2"/>
+          <polygon points="575,85 590,90 575,95" fill="#10b981"/>
+
+          <!-- Stage 4: Final SLN -->
+          <text x="665" y="15" fill="#10b981" font-size="11" text-anchor="middle" font-weight="700">✓ Solid SLN</text>
+          <circle cx="665" cy="90" r="60" fill="rgba(0,212,255,0.06)" stroke="#10b981" stroke-width="2.5"/>
+          <!-- Ordered crystalline core -->
+          <g fill="none" stroke="#00d4ff" stroke-width="1.5" opacity="0.8">
+            <line x1="635" y1="55" x2="635" y2="125"/>
+            <line x1="647" y1="55" x2="647" y2="125"/>
+            <line x1="659" y1="55" x2="659" y2="125"/>
+            <line x1="671" y1="55" x2="671" y2="125"/>
+            <line x1="683" y1="55" x2="683" y2="125"/>
+            <line x1="695" y1="55" x2="695" y2="125"/>
+          </g>
+          <!-- Surfactant shell -->
+          <g fill="#10b981" opacity="0.6">
+            <circle cx="665" cy="30" r="5"/><circle cx="698" cy="45" r="5"/>
+            <circle cx="718" cy="75" r="5"/><circle cx="715" cy="110" r="5"/>
+            <circle cx="695" cy="140" r="5"/><circle cx="660" cy="148" r="5"/>
+            <circle cx="628" cy="138" r="5"/><circle cx="612" cy="110" r="5"/>
+            <circle cx="612" cy="72" r="5"/><circle cx="630" cy="45" r="5"/>
+          </g>
+          <!-- Drug inside -->
+          <text x="660" y="92" fill="#f43f5e" font-size="14">◆</text>
+          <text x="665" y="155" fill="#10b981" font-size="10" text-anchor="middle">Encapsulated SLN</text>
+          <text x="665" y="168" fill="#64748b" font-size="10" text-anchor="middle">100–300 nm</text>
+
+          <!-- Slow vs Rapid note -->
+          <rect x="20" y="190" width="740" height="40" rx="6" fill="rgba(244,63,94,0.05)" stroke="rgba(244,63,94,0.15)" stroke-width="1"/>
+          <text x="30" y="207" fill="#fca5a5" font-size="11" font-weight="700">⚠ Slow cooling vs Rapid cooling:</text>
+          <text x="30" y="223" fill="#94a3b8" font-size="10">SLOW = fewer nuclei, larger crystals, drug has time to diffuse OUT → lower EE%. RAPID (ice bath) = many nucleation sites simultaneously, drug gets physically trapped before it can escape → higher EE%.</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- STEP 7 — DIALYSIS -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="step-card" style="animation-delay:0.5s">
+    <div class="step-header">
+      <div class="step-num" style="background:rgba(124,58,237,0.15); color:#a78bfa; border:1px solid rgba(124,58,237,0.3);">07</div>
+      <div>
+        <div class="step-title">Dialysis — Remove Free Drug, Ethanol & Excess Surfactant</div>
+        <div style="font-size:13px; color:var(--muted); margin-top:4px;">5 mL SLN dispersion vs 100 mL distilled water, 12–24 h, 4°C</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="diagram-wrap">
+        <h4>Dialysis Membrane — Size-Selective Passage</h4>
+        <svg width="100%" viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- Inside bag -->
+          <rect x="20" y="20" width="330" height="160" rx="10" fill="rgba(124,58,237,0.05)" stroke="rgba(124,58,237,0.3)" stroke-width="2"/>
+          <text x="185" y="40" fill="#a78bfa" font-size="12" text-anchor="middle" font-weight="700">INSIDE DIALYSIS BAG</text>
+
+          <!-- SLN particles (large - can't pass) -->
+          <circle cx="80" cy="100" r="25" fill="rgba(0,212,255,0.1)" stroke="#00d4ff" stroke-width="2"/>
+          <text x="80" y="95" fill="#00d4ff" font-size="9" text-anchor="middle">SLN</text>
+          <text x="80" y="108" fill="#00d4ff" font-size="9" text-anchor="middle">~200nm</text>
+          <circle cx="155" cy="110" r="28" fill="rgba(0,212,255,0.1)" stroke="#00d4ff" stroke-width="2"/>
+          <text x="155" y="105" fill="#00d4ff" font-size="9" text-anchor="middle">SLN</text>
+          <text x="155" y="118" fill="#00d4ff" font-size="9" text-anchor="middle">~220nm</text>
+          <circle cx="235" cy="95" r="22" fill="rgba(0,212,255,0.1)" stroke="#00d4ff" stroke-width="2"/>
+          <text x="235" y="90" fill="#00d4ff" font-size="9" text-anchor="middle">SLN</text>
+          <text x="235" y="103" fill="#00d4ff" font-size="9" text-anchor="middle">~180nm</text>
+          <!-- X marks - cannot pass -->
+          <text x="80" y="150" fill="#f43f5e" font-size="11" text-anchor="middle">✗ RETAINED</text>
+          <text x="185" y="170" fill="#f43f5e" font-size="9" text-anchor="middle">Particles too large to pass (MWCO 12-14 kDa)</text>
+
+          <!-- MEMBRANE -->
+          <rect x="350" y="20" width="25" height="160" rx="3" fill="rgba(100,116,139,0.15)" stroke="#475569" stroke-width="2"/>
+          <text x="362" y="12" fill="#64748b" font-size="9" text-anchor="middle">MEMBRANE</text>
+          <text x="362" y="195" fill="#64748b" font-size="8" text-anchor="middle">12-14 kDa MWCO</text>
+          <!-- Pores in membrane -->
+          <g fill="#0a0e1a">
+            <circle cx="362" cy="50" r="3"/><circle cx="362" cy="68" r="3"/>
+            <circle cx="362" cy="86" r="3"/><circle cx="362" cy="104" r="3"/>
+            <circle cx="362" cy="122" r="3"/><circle cx="362" cy="140" r="3"/>
+            <circle cx="362" cy="158" r="3"/>
+          </g>
+
+          <!-- Outside bag -->
+          <rect x="380" y="20" width="380" height="160" rx="10" fill="rgba(16,185,129,0.03)" stroke="rgba(16,185,129,0.2)" stroke-width="2"/>
+          <text x="570" y="40" fill="#10b981" font-size="12" text-anchor="middle" font-weight="700">OUTER BUFFER (Distilled Water)</text>
+
+          <!-- Small molecules passing through pores -->
+          <!-- Free resveratrol -->
+          <path d="M 330 55 L 380 55" fill="none" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <polygon points="375,51 388,55 375,59" fill="#f43f5e"/>
+          <text x="307" y="58" fill="#f43f5e" font-size="10">◆</text>
+          <text x="307" y="70" fill="#f43f5e" font-size="7">free RSV</text>
+          <text x="410" y="60" fill="#f43f5e" font-size="10">◆ ◆ ◆ ◆ ◆</text>
+          <text x="470" y="73" fill="#f43f5e" font-size="8">free resveratrol diffuses out</text>
+
+          <!-- Ethanol -->
+          <path d="M 330 90" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <line x1="330" y1="90" x2="380" y2="90" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <polygon points="375,86 388,90 375,94" fill="#94a3b8"/>
+          <text x="300" y="93" fill="#94a3b8" font-size="8">EtOH →</text>
+          <text x="400" y="95" fill="#94a3b8" font-size="9">ethanol · · · · · · · · ·</text>
+
+          <!-- Surfactant -->
+          <path d="M 330 125 L 380 125" fill="none" stroke="#10b981" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <polygon points="375,121 388,125 375,129" fill="#10b981"/>
+          <text x="280" y="128" fill="#10b981" font-size="8">surfactant →</text>
+          <text x="400" y="130" fill="#10b981" font-size="9">excess surfactant ·  ·  ·  ·</text>
+
+          <!-- Net result -->
+          <rect x="395" y="148" width="350" height="24" rx="4" fill="rgba(16,185,129,0.1)"/>
+          <text x="570" y="164" fill="#10b981" font-size="10" text-anchor="middle">↑ Concentration gradient maintained → drives passive diffusion out</text>
+        </svg>
+      </div>
+
+      <div class="two-col">
+        <div class="info-box" style="border-color:#a78bfa;">
+          <h4 style="color:#a78bfa;">Why Distilled Water (Not Buffer)?</h4>
+          <p>Maximum concentration gradient. Free resveratrol inside bag ≈ high concentration. Distilled water outside ≈ zero concentration. Largest possible ΔC drives fastest, most complete passive diffusion of unencapsulated drug out of bag. Buffer would add ions and reduce gradient efficiency.</p>
+        </div>
+        <div class="info-box" style="border-color:#10b981;">
+          <h4 style="color:#10b981;">Why 4°C During Dialysis?</h4>
+          <p>Prevents SLN particle coalescence and lipid re-melting. Keeps the solid lipid matrix stable. Reduces resveratrol oxidation rate. Prevents microbial growth. The solid lipid core must remain solid throughout dialysis — any warming risks drug loss by leaching.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- STEP 8 — LYOPHILIZATION -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="step-card" style="animation-delay:0.55s">
+    <div class="step-header">
+      <div class="step-num" style="background:rgba(0,212,255,0.15); color:#00d4ff; border:1px solid rgba(0,212,255,0.3);">08</div>
+      <div>
+        <div class="step-title">Freeze (–20°C, 7h) → Lyophilize with Mannitol → 130 mg Powder</div>
+        <div style="font-size:13px; color:var(--muted); margin-top:4px;">Cryoprotection, sublimation, and the reason your yield is only 130 mg</div>
+      </div>
+      <div class="step-temp" style="background:rgba(0,212,255,0.1); color:#00d4ff; border:1px solid rgba(0,212,255,0.2);">❄️ –20°C → –50°C vacuum</div>
+    </div>
+    <div class="step-body">
+      <div class="diagram-wrap">
+        <h4>Lyophilization Stages — What Happens to Your Nanoparticles</h4>
+        <svg width="100%" viewBox="0 0 780 220" xmlns="http://www.w3.org/2000/svg">
+          <!-- Stage 1: Freezing -->
+          <text x="90" y="18" fill="#00d4ff" font-size="12" text-anchor="middle" font-weight="700">① FREEZING (–20°C)</text>
+          <rect x="20" y="25" width="140" height="130" rx="8" fill="rgba(0,212,255,0.04)" stroke="#1e2d45" stroke-width="1"/>
+          <!-- Ice crystals forming -->
+          <g fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1">
+            <!-- Snowflake patterns -->
+            <line x1="50" y1="70" x2="80" y2="70" stroke="#00d4ff" stroke-width="1.5"/>
+            <line x1="65" y1="55" x2="65" y2="85" stroke="#00d4ff" stroke-width="1.5"/>
+            <line x1="55" y1="60" x2="75" y2="80" stroke="#00d4ff" stroke-width="1"/>
+            <line x1="75" y1="60" x2="55" y2="80" stroke="#00d4ff" stroke-width="1"/>
+            <line x1="110" y1="100" x2="140" y2="100" stroke="#00d4ff" stroke-width="1.5"/>
+            <line x1="125" y1="85" x2="125" y2="115" stroke="#00d4ff" stroke-width="1.5"/>
+            <line x1="115" y1="90" x2="135" y2="110" stroke="#00d4ff" stroke-width="1"/>
+            <line x1="135" y1="90" x2="115" y2="110" stroke="#00d4ff" stroke-width="1"/>
+          </g>
+          <!-- SLN particles between ice -->
+          <circle cx="95" cy="80" r="12" fill="rgba(245,158,11,0.15)" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="95" y="84" fill="#f59e0b" font-size="8" text-anchor="middle">SLN</text>
+          <circle cx="45" cy="110" r="10" fill="rgba(245,158,11,0.15)" stroke="#f59e0b" stroke-width="1.5"/>
+          <!-- Mannitol glassy matrix around particles -->
+          <text x="90" y="170" fill="#64748b" font-size="9" text-anchor="middle">Ice crystals form around</text>
+          <text x="90" y="183" fill="#64748b" font-size="9" text-anchor="middle">mannitol-protected SLNs</text>
+
+          <!-- Arrow -->
+          <path d="M 165 90 L 200 90" fill="none" stroke="#64748b" stroke-width="1.5"/>
+          <polygon points="200,85 215,90 200,95" fill="#64748b"/>
+          <text x="182" y="80" fill="#64748b" font-size="8" text-anchor="middle">vacuum</text>
+          <text x="182" y="105" fill="#64748b" font-size="8" text-anchor="middle">–50°C</text>
+
+          <!-- Stage 2: Primary drying (sublimation) -->
+          <text x="305" y="18" fill="#f59e0b" font-size="12" text-anchor="middle" font-weight="700">② PRIMARY DRYING</text>
+          <text x="305" y="35" fill="#64748b" font-size="10" text-anchor="middle">(Ice sublimes directly)</text>
+          <rect x="220" y="40" width="170" height="115" rx="8" fill="rgba(245,158,11,0.04)" stroke="#92400e" stroke-width="1"/>
+          <!-- Ice → vapor arrows (up) -->
+          <g stroke="#00d4ff" stroke-width="1.5" fill="none" stroke-dasharray="3,2">
+            <path d="M 260 120 L 260 55"/>
+            <path d="M 300 125 L 300 50"/>
+            <path d="M 340 118 L 340 53"/>
+            <path d="M 370 122 L 370 55"/>
+          </g>
+          <g fill="#00d4ff" opacity="0.6">
+            <polygon points="257,55 260,42 263,55"/>
+            <polygon points="297,50 300,37 303,50"/>
+            <polygon points="337,53 340,40 343,53"/>
+            <polygon points="367,55 370,42 373,55"/>
+          </g>
+          <!-- Particles remaining -->
+          <circle cx="280" cy="130" r="10" fill="rgba(245,158,11,0.2)" stroke="#f59e0b" stroke-width="1.5"/>
+          <circle cx="320" cy="127" r="12" fill="rgba(245,158,11,0.2)" stroke="#f59e0b" stroke-width="1.5"/>
+          <circle cx="355" cy="132" r="9" fill="rgba(245,158,11,0.2)" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="305" y="165" fill="#f59e0b" font-size="9" text-anchor="middle">Ice → water vapor (sublimation)</text>
+          <text x="305" y="178" fill="#64748b" font-size="9" text-anchor="middle">Particles concentrated</text>
+
+          <!-- Arrow -->
+          <path d="M 395 90 L 430 90" fill="none" stroke="#64748b" stroke-width="1.5"/>
+          <polygon points="430,85 445,90 430,95" fill="#64748b"/>
+          <text x="412" y="108" fill="#64748b" font-size="8" text-anchor="middle">residual</text>
+          <text x="412" y="120" fill="#64748b" font-size="8" text-anchor="middle">water</text>
+
+          <!-- Stage 3: Final powder -->
+          <text x="590" y="18" fill="#10b981" font-size="12" text-anchor="middle" font-weight="700">③ FINAL POWDER</text>
+          <rect x="450" y="25" width="290" height="130" rx="8" fill="rgba(16,185,129,0.04)" stroke="#065f46" stroke-width="1"/>
+          <!-- Powder particles -->
+          <g>
+            <ellipse cx="490" cy="140" rx="20" ry="5" fill="rgba(245,158,11,0.3)" stroke="#f59e0b" stroke-width="1"/>
+            <ellipse cx="530" cy="142" rx="18" ry="5" fill="rgba(245,158,11,0.3)" stroke="#f59e0b" stroke-width="1"/>
+            <ellipse cx="568" cy="139" rx="22" ry="5" fill="rgba(245,158,11,0.3)" stroke="#f59e0b" stroke-width="1"/>
+            <ellipse cx="610" cy="141" rx="16" ry="5" fill="rgba(245,158,11,0.3)" stroke="#f59e0b" stroke-width="1"/>
+            <ellipse cx="650" cy="140" rx="20" ry="5" fill="rgba(245,158,11,0.3)" stroke="#f59e0b" stroke-width="1"/>
+            <ellipse cx="695" cy="138" rx="18" ry="5" fill="rgba(245,158,11,0.3)" stroke="#f59e0b" stroke-width="1"/>
+          </g>
+          <!-- Mannitol matrix label -->
+          <text x="590" y="80" fill="#10b981" font-size="14" text-anchor="middle">✓ Free-flowing powder</text>
+          <text x="590" y="100" fill="#64748b" font-size="11" text-anchor="middle">SLNs embedded in mannitol matrix</text>
+          <text x="590" y="118" fill="#f43f5e" font-size="11" text-anchor="middle">Your yield: 130 mg</text>
+          <text x="590" y="133" fill="#64748b" font-size="9" text-anchor="middle">Target: 300–500 mg → optimization needed</text>
+
+          <!-- Why mannitol note -->
+          <rect x="450" y="175" width="290" height="38" rx="4" fill="rgba(124,58,237,0.08)"/>
+          <text x="595" y="190" fill="#a78bfa" font-size="10" text-anchor="middle" font-weight="700">Mannitol (cryoprotectant) role:</text>
+          <text x="595" y="205" fill="#94a3b8" font-size="9" text-anchor="middle">Forms glassy matrix → H-bonds with surfactant shell → physically separates particles → prevents aggregation during drying</text>
+        </svg>
+      </div>
+
+      <div class="critical">
+        Your 130 mg yield (target 300–500 mg) indicates losses during: (1) inadequate mannitol concentration → particle aggregation during freezing, (2) losses during dialysis transfer, (3) suboptimal freeze-drying primary/secondary drying parameters. Optimize: increase mannitol to 5–10% w/v, extend primary drying cycle, confirm shelf temperature and chamber pressure settings.
+      </div>
+    </div>
+  </div>
+
+  <!-- FINAL COMPLETE PROCESS SUMMARY -->
+  <div class="divider"><div class="divider-line"></div><span class="divider-label">Complete Process Summary</span><div class="divider-line"></div></div>
+
+  <div class="diagram-wrap">
+    <h4>End-to-End SLN Formation — The Complete Molecular Story</h4>
+    <svg width="100%" viewBox="0 0 900 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#00d4ff"/>
+        </marker>
+      </defs>
+
+      <!-- Step boxes -->
+      <rect x="5" y="25" width="90" height="50" rx="6" fill="rgba(0,212,255,0.1)" stroke="#00d4ff" stroke-width="1.5"/>
+      <text x="50" y="48" fill="#00d4ff" font-size="9" text-anchor="middle" font-weight="700">Melt lipids</text>
+      <text x="50" y="62" fill="#64748b" font-size="8" text-anchor="middle">75–80°C</text>
+
+      <line x1="96" y1="50" x2="116" y2="50" stroke="#00d4ff" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <rect x="118" y="25" width="90" height="50" rx="6" fill="rgba(244,63,94,0.1)" stroke="#f43f5e" stroke-width="1.5"/>
+      <text x="163" y="48" fill="#f43f5e" font-size="9" text-anchor="middle" font-weight="700">Add RSV/EtOH</text>
+      <text x="163" y="62" fill="#64748b" font-size="8" text-anchor="middle">Partitioning</text>
+
+      <line x1="209" y1="50" x2="229" y2="50" stroke="#00d4ff" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <rect x="231" y="25" width="90" height="50" rx="6" fill="rgba(16,185,129,0.1)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="276" y="48" fill="#10b981" font-size="9" text-anchor="middle" font-weight="700">Mix aqueous</text>
+      <text x="276" y="62" fill="#64748b" font-size="8" text-anchor="middle">Tween + P188</text>
+
+      <line x1="322" y1="50" x2="342" y2="50" stroke="#00d4ff" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <rect x="344" y="25" width="90" height="50" rx="6" fill="rgba(245,158,11,0.1)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="389" y="48" fill="#f59e0b" font-size="9" text-anchor="middle" font-weight="700">Stir 1000 rpm</text>
+      <text x="389" y="62" fill="#64748b" font-size="8" text-anchor="middle">Pre-emulsion</text>
+
+      <line x1="435" y1="50" x2="455" y2="50" stroke="#00d4ff" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <rect x="457" y="25" width="90" height="50" rx="6" fill="rgba(124,58,237,0.1)" stroke="#7c3aed" stroke-width="1.5"/>
+      <text x="502" y="48" fill="#a78bfa" font-size="9" text-anchor="middle" font-weight="700">Sonicate</text>
+      <text x="502" y="62" fill="#64748b" font-size="8" text-anchor="middle">Cavitation → nano</text>
+
+      <line x1="548" y1="50" x2="568" y2="50" stroke="#00d4ff" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <rect x="570" y="25" width="90" height="50" rx="6" fill="rgba(0,212,255,0.1)" stroke="#00d4ff" stroke-width="1.5"/>
+      <text x="615" y="48" fill="#00d4ff" font-size="9" text-anchor="middle" font-weight="700">Ice bath cool</text>
+      <text x="615" y="62" fill="#64748b" font-size="8" text-anchor="middle">SLN solidifies</text>
+
+      <line x1="661" y1="50" x2="681" y2="50" stroke="#00d4ff" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <rect x="683" y="25" width="90" height="50" rx="6" fill="rgba(100,116,139,0.1)" stroke="#475569" stroke-width="1.5"/>
+      <text x="728" y="48" fill="#94a3b8" font-size="9" text-anchor="middle" font-weight="700">Dialysis</text>
+      <text x="728" y="62" fill="#64748b" font-size="8" text-anchor="middle">Free drug out</text>
+
+      <line x1="774" y1="50" x2="794" y2="50" stroke="#00d4ff" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <rect x="796" y="25" width="90" height="50" rx="6" fill="rgba(16,185,129,0.15)" stroke="#10b981" stroke-width="2"/>
+      <text x="841" y="48" fill="#10b981" font-size="9" text-anchor="middle" font-weight="700">Lyophilize</text>
+      <text x="841" y="62" fill="#10b981" font-size="8" text-anchor="middle">→ 130mg powder</text>
+    </svg>
+  </div>
+
+  <!-- ONE SENTENCE SUMMARY -->
+  <div class="summary-box">
+    <h3>The Molecular Story in One Paragraph</h3>
+    <p>
+      Resveratrol is first dissolved in ethanol, exploiting hydrogen bonding with its phenolic –OH groups. This solution is added to molten stearic acid at 75–80°C, where <em>hydrophobic partitioning</em> drives resveratrol from polar ethanol into the nonpolar lipid melt. Oleic acid, with its cis double bond, permanently disrupts the stearic acid crystal lattice. Tween 80 and Poloxamer 188 in the aqueous phase coat newly-formed nano-sized lipid droplets during ultrasonication — Tween 80 anchors immediately at the interface, Poloxamer 188 provides a steric brush layer preventing coalescence. Rapid ice-bath cooling triggers crystallization: many nucleation sites form simultaneously, the imperfect lattice traps resveratrol in defect zones before it can escape, and <em>solid lipid nanoparticles of 100–300 nm are born</em>. Dialysis removes free drug and ethanol by passive diffusion down the concentration gradient. Lyophilization with mannitol removes water by sublimation, yielding a stable free-flowing powder — the <em>130 mg you collected</em>, which should be 300–500 mg after process optimization.
+    </p>
+  </div>
+
+  <footer>
+    <div style="font-size:16px;font-weight:900;letter-spacing:2px;font-family:'Space Mono',monospace;margin-bottom:8px;color:#00ffe7;">NANO TRANSLATION LAB</div>
+    <div style="margin-bottom:16px;">Resveratrol-Loaded SLN — Deep Molecular & Process Protocol</div>
+    <a href="hub.html" style="display:inline-block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:#00ffe7;border:1px solid rgba(0,255,231,0.3);padding:8px 20px;border-radius:6px;text-decoration:none;background:rgba(0,255,231,0.05);">← BACK TO PORTAL</a>
+  </footer>
+
+</div>
+
+</body>
+</html>

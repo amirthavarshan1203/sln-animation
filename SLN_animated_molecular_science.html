@@ -1,0 +1,2595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nano Translation Lab — SLN Molecular Science</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:ital,wght@0,300;0,400;0,600;0,700;1,300&display=swap');
+
+:root {
+  --bg: #050810;
+  --c1: #00ffe7;
+  --c2: #ff6b35;
+  --c3: #ffd700;
+  --c4: #b44fff;
+  --c5: #00ff88;
+  --c6: #ff3366;
+  --panel: rgba(255,255,255,0.03);
+  --border: rgba(0,255,231,0.15);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: #e0f0ff;
+  font-family: 'Exo 2', sans-serif;
+  overflow-x: hidden;
+  cursor: crosshair;
+}
+
+/* STARFIELD BG */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background:
+    radial-gradient(1px 1px at 10% 15%, rgba(0,255,231,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 40%, rgba(255,107,53,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 20%, rgba(180,79,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 60%, rgba(0,255,136,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 45% 75%, rgba(255,215,0,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 30%, rgba(0,255,231,0.3) 0%, transparent 100%),
+    radial-gradient(600px 400px at 20% 50%, rgba(0,255,231,0.03) 0%, transparent 70%),
+    radial-gradient(500px 300px at 80% 50%, rgba(180,79,255,0.04) 0%, transparent 70%);
+  pointer-events:none; z-index:0;
+  animation: startwinkle 8s infinite;
+}
+@keyframes startwinkle {
+  0%,100%{opacity:1} 50%{opacity:0.7}
+}
+
+/* TOP NAV */
+.topnav {
+  position:fixed; top:0; left:0; right:0;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 32px;
+  background: rgba(5,8,16,0.9);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  z-index: 1000;
+}
+.logo-wrap{display:flex;flex-direction:column;line-height:1.2;}
+.logo {
+  font-family:'Orbitron',monospace;
+  font-size:clamp(9px,2vw,13px); font-weight:900;
+  color:var(--c1);
+  letter-spacing:2px;
+  background:linear-gradient(90deg,#00ffe7,#b44fff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.logo-sub-nav{font-size:8px;color:rgba(0,255,231,0.35);letter-spacing:2px;font-family:'Exo 2',sans-serif;}
+.nav-steps {
+  display:flex; gap:4px; flex-wrap:wrap; justify-content:center;
+}
+.nav-btn {
+  background:transparent;
+  border:1px solid rgba(0,255,231,0.2);
+  color:#64748b;
+  font-family:'Orbitron',monospace;
+  font-size:9px; font-weight:700;
+  padding:5px 10px;
+  border-radius:3px;
+  cursor:pointer;
+  transition:all 0.3s;
+  letter-spacing:1px;
+}
+.nav-btn:hover, .nav-btn.active {
+  background:rgba(0,255,231,0.1);
+  color:var(--c1);
+  border-color:var(--c1);
+  box-shadow:0 0 12px rgba(0,255,231,0.3);
+}
+
+/* HERO */
+.hero {
+  min-height:100vh;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center;
+  padding:100px 24px 60px;
+  position:relative; z-index:1;
+}
+.hero-badge {
+  display:inline-block;
+  background:linear-gradient(90deg, rgba(0,255,231,0.1), rgba(180,79,255,0.1));
+  border:1px solid rgba(0,255,231,0.3);
+  color:var(--c1);
+  font-family:'Orbitron',monospace;
+  font-size:10px; letter-spacing:4px;
+  padding:8px 20px; border-radius:2px;
+  margin-bottom:28px;
+  animation: pulse-glow 2s infinite;
+}
+@keyframes pulse-glow {
+  0%,100%{box-shadow:0 0 10px rgba(0,255,231,0.2)}
+  50%{box-shadow:0 0 25px rgba(0,255,231,0.5)}
+}
+.hero h1 {
+  font-family:'Orbitron',monospace;
+  font-size:clamp(22px,4.5vw,56px);
+  font-weight:900;
+  line-height:1.1;
+  margin-bottom:16px;
+  background:linear-gradient(135deg, #00ffe7, #b44fff, #ff6b35);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero-sub {
+  font-size:clamp(13px,2vw,18px);
+  font-weight:300;
+  color:rgba(224,240,255,0.6);
+  max-width:650px; line-height:1.7;
+  margin-bottom:48px;
+}
+
+/* ANIMATED MOLECULE HERO */
+#hero-canvas { width:100%; max-width:700px; height:280px; position:relative; }
+
+/* SECTION */
+.section {
+  padding:80px 24px;
+  position:relative; z-index:1;
+  max-width:1200px;
+  margin:0 auto;
+}
+.sec-label {
+  font-family:'Orbitron',monospace;
+  font-size:10px; letter-spacing:4px;
+  color:var(--c1); text-transform:uppercase;
+  margin-bottom:10px;
+  opacity:0.7;
+}
+.sec-title {
+  font-family:'Orbitron',monospace;
+  font-size:clamp(18px,3vw,32px);
+  font-weight:900;
+  margin-bottom:8px;
+  line-height:1.2;
+}
+
+/* STEP PANEL */
+.step-panel {
+  background: var(--panel);
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  margin-bottom:60px;
+  position:relative;
+}
+.step-panel::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg, transparent, var(--c1), transparent);
+  animation: scan-line 3s linear infinite;
+}
+@keyframes scan-line {
+  0%{transform:scaleX(0) translateX(-100%)} 100%{transform:scaleX(1) translateX(100%)}
+}
+
+.step-header {
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:20px;
+  padding:24px 32px;
+  background:rgba(255,255,255,0.02);
+  border-bottom:1px solid var(--border);
+  cursor:pointer;
+  transition:background 0.3s;
+}
+.step-header:hover { background:rgba(255,255,255,0.04); }
+
+.step-num-badge {
+  width:52px; height:52px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Orbitron',monospace;
+  font-size:18px; font-weight:900;
+  position:relative;
+  flex-shrink:0;
+}
+.step-num-badge::after {
+  content:'';
+  position:absolute; inset:-4px;
+  border-radius:50%;
+  border:2px solid;
+  animation:spin 4s linear infinite;
+}
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+.step-title-wrap {}
+.step-num-label {
+  font-family:'Orbitron',monospace;
+  font-size:9px; letter-spacing:3px;
+  opacity:0.5; margin-bottom:4px;
+}
+.step-name {
+  font-size:18px; font-weight:700;
+  line-height:1.3;
+}
+.step-subtitle { font-size:13px; opacity:0.5; margin-top:4px; }
+
+.step-temp-badge {
+  font-family:'Orbitron',monospace;
+  font-size:11px; font-weight:700;
+  padding:8px 16px; border-radius:20px;
+  border:1px solid;
+  white-space:nowrap;
+}
+
+.step-body {
+  display:none;
+  padding:32px;
+  animation:fadeIn 0.4s ease;
+}
+.step-body.open { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+
+.two-panel {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+  margin-bottom:28px;
+}
+@media(max-width:700px){ .two-panel{grid-template-columns:1fr} }
+
+.info-card {
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:12px;
+  padding:20px;
+}
+.info-card h4 {
+  font-family:'Orbitron',monospace;
+  font-size:10px; letter-spacing:2px;
+  margin-bottom:14px; opacity:0.7;
+}
+.info-card p, .info-card li {
+  font-size:13.5px; line-height:1.8;
+  color:rgba(224,240,255,0.65);
+}
+.info-card ul { list-style:none; }
+.info-card li { padding:3px 0; }
+.info-card li::before { content:'▸ '; font-size:10px; }
+
+.science-note {
+  background:linear-gradient(135deg,rgba(0,255,231,0.04),rgba(180,79,255,0.04));
+  border:1px solid rgba(0,255,231,0.12);
+  border-left:3px solid var(--c1);
+  border-radius:8px;
+  padding:16px 20px;
+  margin:20px 0;
+  font-size:14px; line-height:1.8;
+  color:rgba(224,240,255,0.7);
+}
+.science-note strong { color:var(--c1); }
+
+.warn-note {
+  background:rgba(255,51,102,0.06);
+  border:1px solid rgba(255,51,102,0.2);
+  border-left:3px solid var(--c6);
+  border-radius:8px;
+  padding:14px 18px;
+  margin:16px 0;
+  font-size:13px; line-height:1.7;
+  color:#fca5a5;
+}
+.warn-note::before { content:'⚠ CRITICAL — '; font-weight:700; color:var(--c6); }
+
+/* CANVAS AREAS */
+.canvas-wrap {
+  background:#02040a;
+  border:1px solid rgba(0,255,231,0.1);
+  border-radius:12px;
+  overflow:hidden;
+  position:relative;
+  margin:20px 0;
+}
+.canvas-wrap canvas {
+  display:block; width:100%;
+}
+.canvas-controls {
+  display:flex; gap:10px; flex-wrap:wrap;
+  padding:12px 16px;
+  background:rgba(255,255,255,0.02);
+  border-top:1px solid rgba(255,255,255,0.05);
+}
+.ctrl-btn {
+  background:transparent;
+  border:1px solid rgba(0,255,231,0.25);
+  color:var(--c1);
+  font-family:'Orbitron',monospace;
+  font-size:9px; font-weight:700;
+  padding:7px 16px; border-radius:4px;
+  cursor:pointer;
+  transition:all 0.25s;
+  letter-spacing:1.5px;
+}
+.ctrl-btn:hover {
+  background:rgba(0,255,231,0.12);
+  box-shadow:0 0 15px rgba(0,255,231,0.3);
+}
+.ctrl-btn.active {
+  background:rgba(0,255,231,0.2);
+  border-color:var(--c1);
+}
+.canvas-label {
+  position:absolute; top:12px; left:16px;
+  font-family:'Orbitron',monospace;
+  font-size:9px; letter-spacing:2px;
+  color:rgba(0,255,231,0.5);
+  text-transform:uppercase;
+}
+
+/* DATA TABLE */
+.data-table {
+  width:100%; border-collapse:collapse;
+  font-size:13px; margin:20px 0;
+}
+.data-table th {
+  background:rgba(0,255,231,0.05);
+  border-bottom:1px solid rgba(0,255,231,0.15);
+  padding:12px 16px;
+  font-family:'Orbitron',monospace;
+  font-size:9px; letter-spacing:2px;
+  color:var(--c1); text-align:left;
+}
+.data-table td {
+  padding:11px 16px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  color:rgba(224,240,255,0.65);
+  line-height:1.6;
+}
+.data-table tr:hover td { background:rgba(255,255,255,0.02); }
+
+/* THERMODYNAMICS PANEL */
+.thermo-panel {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:16px;
+  margin:20px 0;
+}
+.thermo-card {
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:10px;
+  padding:18px;
+  text-align:center;
+  transition:transform 0.3s, box-shadow 0.3s;
+}
+.thermo-card:hover {
+  transform:translateY(-4px);
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+.thermo-value {
+  font-family:'Orbitron',monospace;
+  font-size:22px; font-weight:900;
+  margin-bottom:6px;
+}
+.thermo-name {
+  font-size:12px; opacity:0.55;
+  line-height:1.4;
+}
+
+/* PROCESS FLOW STRIP */
+.flow-strip {
+  display:flex; align-items:center;
+  gap:6px; flex-wrap:wrap;
+  margin:32px 0;
+  padding:20px;
+  background:rgba(255,255,255,0.02);
+  border:1px solid var(--border);
+  border-radius:12px;
+}
+.flow-node {
+  flex:1; min-width:80px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:8px;
+  padding:10px 8px;
+  text-align:center;
+  font-size:11px; font-weight:600;
+  cursor:pointer;
+  transition:all 0.3s;
+  line-height:1.4;
+}
+.flow-node:hover, .flow-node.active {
+  border-color:var(--c1);
+  color:var(--c1);
+  background:rgba(0,255,231,0.08);
+  box-shadow:0 0 20px rgba(0,255,231,0.2);
+}
+.flow-arrow { color:var(--c1); font-size:18px; flex-shrink:0; }
+
+/* CONCLUSION */
+.conclusion {
+  background:linear-gradient(135deg,rgba(0,255,231,0.05),rgba(180,79,255,0.05));
+  border:1px solid rgba(0,255,231,0.2);
+  border-radius:20px;
+  padding:48px;
+  text-align:center;
+  margin:60px 0;
+  position:relative; overflow:hidden;
+}
+.conclusion::before {
+  content:'';
+  position:absolute; top:-50%; left:-50%; width:200%; height:200%;
+  background:conic-gradient(from 0deg, transparent 340deg, rgba(0,255,231,0.05) 360deg);
+  animation:rotate-bg 10s linear infinite;
+}
+@keyframes rotate-bg { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+.conclusion-inner { position:relative; z-index:1; }
+.conclusion h2 {
+  font-family:'Orbitron',monospace;
+  font-size:clamp(18px,3vw,28px);
+  font-weight:900;
+  color:var(--c1);
+  margin-bottom:20px;
+}
+.conclusion p {
+  font-size:15px; line-height:2;
+  color:rgba(224,240,255,0.7);
+  max-width:800px; margin:0 auto;
+}
+.conclusion em { color:var(--c3); font-style:normal; font-weight:700; }
+
+footer {
+  text-align:center;
+  padding:32px 20px;
+  border-top:1px solid var(--border);
+  font-family:'Orbitron',monospace;
+  font-size:9px; letter-spacing:3px;
+  color:rgba(0,255,231,0.3);
+}
+
+/* ── MOBILE RESPONSIVE ── */
+@media(max-width:600px){
+  .topnav{padding:10px 14px;gap:6px;flex-wrap:nowrap;}
+  .nav-steps{display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;scrollbar-width:none;}
+  .nav-steps::-webkit-scrollbar{display:none;}
+  .nav-btn{font-size:7px;padding:4px 7px;white-space:nowrap;flex-shrink:0;}
+  .hero{padding:90px 16px 40px;}
+  .hero h1{font-size:clamp(20px,7vw,36px);}
+  .section{padding:40px 14px;}
+  .step-header{padding:16px 14px;gap:10px;}
+  .step-name{font-size:14px;}
+  .step-body{padding:16px 14px;}
+  .two-panel{grid-template-columns:1fr;}
+  canvas{max-height:220px !important;}
+  .canvas-controls{gap:6px;padding:8px 10px;}
+  .ctrl-btn{font-size:8px;padding:5px 10px;}
+  .thermo-panel{grid-template-columns:1fr 1fr;}
+  .thermo-value{font-size:18px;}
+  .data-table{font-size:12px;}
+  th,td{padding:8px 10px;}
+  .conclusion{padding:28px 16px;}
+  .flow-strip{padding:12px;}
+  .flow-node{min-width:60px;font-size:10px;padding:7px 4px;}
+  .step-temp-badge{font-size:9px;padding:5px 10px;}
+}
+@media(max-width:400px){
+  .thermo-panel{grid-template-columns:1fr;}
+  .nav-steps{gap:1px;}
+  .nav-btn{font-size:6px;padding:3px 5px;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="logo-wrap"><div class="logo">NANO TRANSLATION LAB</div><div class="logo-sub-nav">Pharmaceutical Nanotechnology</div></div>
+  <div class="nav-steps">
+    <button class="nav-btn active" onclick="scrollToStep(0)">INTRO</button>
+    <button class="nav-btn" onclick="scrollToStep(1)">MATERIALS</button>
+    <button class="nav-btn" onclick="scrollToStep(2)">MELT</button>
+    <button class="nav-btn" onclick="scrollToStep(3)">OLEIC</button>
+    <button class="nav-btn" onclick="scrollToStep(4)">DRUG</button>
+    <button class="nav-btn" onclick="scrollToStep(5)">EMULSION</button>
+    <button class="nav-btn" onclick="scrollToStep(6)">SONICATE</button>
+    <button class="nav-btn" onclick="scrollToStep(7)">CRYSTALLIZE</button>
+    <button class="nav-btn" onclick="scrollToStep(8)">DIALYSIS</button>
+    <button class="nav-btn" onclick="scrollToStep(9)">LYOPHILIZE</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero" id="step-0">
+  <div class="hero-badge">PHARMACEUTICAL NANOTECHNOLOGY — MOLECULAR LEVEL</div>
+  <h1>Resveratrol-Loaded<br>Solid Lipid Nanoparticles</h1>
+  <p class="hero-sub">A complete thermodynamic, interfacial, and crystallization-theory-based visualization of SLN fabrication. Every molecular event. Every phase transition. Animated.</p>
+  <div id="hero-canvas">
+    <canvas id="heroCanvas" height="280"></canvas>
+  </div>
+</div>
+
+<!-- MATERIALS SECTION -->
+<div class="section" id="step-1">
+  <div class="sec-label">System Overview</div>
+  <div class="sec-title">Three-Phase Evolving System</div>
+  <p style="color:rgba(224,240,255,0.55);font-size:14px;margin:10px 0 30px;max-width:700px;">
+    Your formulation is a <strong style="color:var(--c1)">metastable kinetically-trapped nano-system</strong>. Not an equilibrium structure. Understanding each component at the molecular level is essential before any process step.
+  </p>
+
+  <div class="canvas-wrap" style="height:300px;position:relative;">
+    <div class="canvas-label">MOLECULAR COMPONENTS — INTERACTIVE</div>
+    <canvas id="materialsCanvas" height="300"></canvas>
+    <div class="canvas-controls">
+      <button class="ctrl-btn active" onclick="showMaterial('stearic')">STEARIC ACID</button>
+      <button class="ctrl-btn" onclick="showMaterial('oleic')">OLEIC ACID</button>
+      <button class="ctrl-btn" onclick="showMaterial('resveratrol')">RESVERATROL</button>
+      <button class="ctrl-btn" onclick="showMaterial('tween')">TWEEN 80</button>
+      <button class="ctrl-btn" onclick="showMaterial('poloxamer')">POLOXAMER 188</button>
+      <button class="ctrl-btn" onclick="showMaterial('all')">ALL TOGETHER</button>
+    </div>
+  </div>
+
+  <div class="thermo-panel" style="margin-top:28px;">
+    <div class="thermo-card" style="border-color:rgba(0,255,231,0.2)">
+      <div class="thermo-value" style="color:var(--c1)">C18:0</div>
+      <div class="thermo-name">Stearic acid carbon chain — fully saturated, high lattice energy</div>
+    </div>
+    <div class="thermo-card" style="border-color:rgba(255,107,53,0.2)">
+      <div class="thermo-value" style="color:var(--c2)">69–70°C</div>
+      <div class="thermo-name">Stearic acid melting point — above this, ΔGfusion &lt; 0</div>
+    </div>
+    <div class="thermo-card" style="border-color:rgba(255,215,0,0.2)">
+      <div class="thermo-value" style="color:var(--c3)">228 Da</div>
+      <div class="thermo-name">Resveratrol MW — trans isomer active, 3× phenolic –OH</div>
+    </div>
+    <div class="thermo-card" style="border-color:rgba(180,79,255,0.2)">
+      <div class="thermo-value" style="color:var(--c4)">log P 3.1</div>
+      <div class="thermo-name">Resveratrol lipophilicity — strongly partitions into lipid phase</div>
+    </div>
+    <div class="thermo-card" style="border-color:rgba(0,255,136,0.2)">
+      <div class="thermo-value" style="color:var(--c5)">PEO-PPO</div>
+      <div class="thermo-name">Poloxamer 188 — steric brush layer prevents coalescence</div>
+    </div>
+    <div class="thermo-card" style="border-color:rgba(255,51,102,0.2)">
+      <div class="thermo-value" style="color:var(--c6)">3-phase</div>
+      <div class="thermo-name">System evolution: lipid melt → nano-emulsion → SLN</div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2: MELTING -->
+<div class="section" id="step-2" style="padding-top:0">
+  <div class="step-panel">
+    <div class="step-header" onclick="toggleStep('melt')">
+      <div class="step-num-badge" style="background:rgba(0,255,231,0.1);color:var(--c1);border:2px solid var(--c1);">
+        <span style="position:relative;z-index:1">01</span>
+      </div>
+      <div class="step-title-wrap">
+        <div class="step-num-label">STEP 01 — THERMODYNAMICS</div>
+        <div class="step-name">Stearic Acid Crystal Melting</div>
+        <div class="step-subtitle">Solid → Liquid Phase Transition | ΔGfusion = 0 at 70°C</div>
+      </div>
+      <div class="step-temp-badge" style="color:var(--c6);border-color:var(--c6)">🌡 75–80°C</div>
+    </div>
+    <div class="step-body open" id="body-melt">
+      <div class="two-panel">
+        <div class="info-card">
+          <h4 style="color:var(--c1)">THERMODYNAMIC EVENT</h4>
+          <ul>
+            <li>Stearic acid: highly ordered lamellar crystal</li>
+            <li>Van der Waals chain–chain interactions break at MP</li>
+            <li>At MP: ΔGfusion = 0 (equilibrium)</li>
+            <li>Above MP: ΔGfusion &lt; 0 → melting spontaneous</li>
+            <li>Conformational entropy of chains increases dramatically</li>
+            <li>Viscosity drops → liquid state allows drug dissolution</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4 style="color:var(--c6)">WHY 75–80°C SPECIFICALLY</h4>
+          <ul>
+            <li>MP stearic acid = 69–70°C</li>
+            <li>Process 5–10°C above MP = safety margin</li>
+            <li>Ensures complete melting of all crystalline domains</li>
+            <li>Incomplete melt → heterogeneous nucleation → large particles</li>
+            <li>&gt;90°C → resveratrol thermal/oxidative degradation risk</li>
+            <li>75–80°C = optimal fluidity + drug stability window</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="canvas-wrap">
+        <div class="canvas-label">CRYSTAL MELTING ANIMATION — MOLECULAR</div>
+        <canvas id="meltCanvas" height="260"></canvas>
+        <div class="canvas-controls">
+          <button class="ctrl-btn active" onclick="setMeltState('solid')" id="btn-solid">◼ SOLID CRYSTAL</button>
+          <button class="ctrl-btn" onclick="setMeltState('heating')" id="btn-heating">🔥 APPLY HEAT</button>
+          <button class="ctrl-btn" onclick="setMeltState('molten')" id="btn-molten">💧 MOLTEN STATE</button>
+          <button class="ctrl-btn" onclick="setMeltState('drug')" id="btn-drug">◆ ADD RESVERATROL</button>
+        </div>
+      </div>
+
+      <div class="science-note">
+        <strong>Deep Science:</strong> The crystalline lattice of stearic acid is a <strong>lamellar β-polymorph</strong> — the most stable and most ordered form. Hydrocarbon chains pack in an all-trans conformation with repeat spacing of ~4.96 Å. When the lattice collapses above 70°C, chains gain gauche conformations (rotational disorder), increasing the free volume by ~15%. This free volume is what allows resveratrol to become molecularly dispersed rather than merely suspended.
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: OLEIC ACID -->
+  <div class="step-panel">
+    <div class="step-header" onclick="toggleStep('oleic')">
+      <div class="step-num-badge" style="background:rgba(255,107,53,0.1);color:var(--c2);border:2px solid var(--c2);">
+        <span style="position:relative;z-index:1">02</span>
+      </div>
+      <div class="step-title-wrap">
+        <div class="step-num-label">STEP 02 — CRYSTAL ENGINEERING</div>
+        <div class="step-name">Oleic Acid — Lattice Modulator</div>
+        <div class="step-subtitle">Packing Frustration → Defect Engineering → Drug Loading</div>
+      </div>
+      <div class="step-temp-badge" style="color:var(--c2);border-color:var(--c2)">🔗 cis DOUBLE BOND</div>
+    </div>
+    <div class="step-body open" id="body-oleic">
+      <div class="science-note">
+        <strong>Crystal Engineering Concept:</strong> Oleic acid is not just a "liquid lipid additive." It is a <strong>deliberate defect-engineering agent</strong>. Its single cis double bond creates a ~120° kink in the otherwise linear C18 chain. This kink geometry is geometrically incompatible with the tight all-trans stearic acid lattice — meaning oleic acid molecules cannot fit cleanly into the growing crystal during solidification. They are rejected into interlamellar regions, creating stacking faults, grain boundaries, and amorphous pockets. These disordered zones are where resveratrol will be kinetically trapped.
+      </div>
+
+      <div class="canvas-wrap">
+        <div class="canvas-label">CRYSTAL LATTICE COMPARISON</div>
+        <canvas id="oleicCanvas" height="300"></canvas>
+        <div class="canvas-controls">
+          <button class="ctrl-btn active" onclick="setOleicView('pure')">PURE STEARIC</button>
+          <button class="ctrl-btn" onclick="setOleicView('mixed')">+ OLEIC ACID</button>
+          <button class="ctrl-btn" onclick="setOleicView('drug')">+ DRUG TRAPPED</button>
+          <button class="ctrl-btn" onclick="setOleicView('compare')">SIDE BY SIDE</button>
+        </div>
+      </div>
+
+      <div class="two-panel">
+        <div class="info-card" style="border-color:rgba(255,51,102,0.2)">
+          <h4 style="color:var(--c6)">PURE STEARIC ACID SLN (β-form)</h4>
+          <ul>
+            <li>Highly ordered lamellar crystal packing</li>
+            <li>All-trans C18 chains in parallel alignment</li>
+            <li>Repeat d-spacing: ~4.96 Å (XRD peak)</li>
+            <li>Drug molecules expelled during crystallization</li>
+            <li>Low encapsulation efficiency (EE &lt; 60%)</li>
+            <li>Drug aggregates at particle surface → burst release</li>
+          </ul>
+        </div>
+        <div class="info-card" style="border-color:rgba(0,255,136,0.2)">
+          <h4 style="color:var(--c5)">STEARIC + OLEIC NLC-LIKE MATRIX</h4>
+          <ul>
+            <li>Disrupted packing — reduced crystallinity (%XC↓)</li>
+            <li>Oleic acid creates amorphous inclusions</li>
+            <li>Increased free volume → drug accommodation</li>
+            <li>Lower ΔG between crystalline and amorphous lipid domains</li>
+            <li>Drug trapped in defects during cooling (kinetic trap)</li>
+            <li>Higher EE, lower burst, more sustained release</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: DRUG -->
+  <div class="step-panel">
+    <div class="step-header" onclick="toggleStep('drug')">
+      <div class="step-num-badge" style="background:rgba(255,215,0,0.1);color:var(--c3);border:2px solid var(--c3);">
+        <span style="position:relative;z-index:1">03</span>
+      </div>
+      <div class="step-title-wrap">
+        <div class="step-num-label">STEP 03 — THERMODYNAMIC PARTITIONING</div>
+        <div class="step-name">Resveratrol Dissolution → Lipid Partitioning</div>
+        <div class="step-subtitle">EtOH solvation → hydrophobic partitioning → molecular dispersion in melt</div>
+      </div>
+      <div class="step-temp-badge" style="color:var(--c3);border-color:var(--c3)">log P = 3.1</div>
+    </div>
+    <div class="step-body open" id="body-drug">
+      <div class="canvas-wrap">
+        <div class="canvas-label">DRUG PARTITIONING — ANIMATED</div>
+        <canvas id="drugCanvas" height="280"></canvas>
+        <div class="canvas-controls">
+          <button class="ctrl-btn active" onclick="setDrugState('ethanol')">IN ETHANOL</button>
+          <button class="ctrl-btn" onclick="setDrugState('interface')">AT INTERFACE</button>
+          <button class="ctrl-btn" onclick="setDrugState('partition')">PARTITION EVENT</button>
+          <button class="ctrl-btn" onclick="setDrugState('lipid')">IN LIPID MELT</button>
+          <button class="ctrl-btn" onclick="setDrugState('ethanol_escape')">ETHANOL LEAVES</button>
+        </div>
+      </div>
+
+      <div class="two-panel">
+        <div class="info-card">
+          <h4 style="color:var(--c3)">MOLECULAR INTERACTIONS IN LIPID</h4>
+          <ul>
+            <li><strong style="color:var(--c3)">π–alkyl interaction:</strong> Resveratrol aromatic rings interact with C18 hydrocarbon chains</li>
+            <li><strong style="color:var(--c3)">Hydrophobic effect:</strong> Drug excluded from water → concentrated in lipid</li>
+            <li><strong style="color:var(--c3)">Weak H-bonding:</strong> Phenolic –OH with fatty acid head groups at interface</li>
+            <li><strong style="color:var(--c3)">Thermodynamic driving force:</strong> ΔGpartitioning = RT·ln(Klipid/water) &lt; 0</li>
+            <li>Resveratrol exists as <em>molecularly dissolved</em> species in melt</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4 style="color:var(--c4)">SOLUBILITY COMPARISON</h4>
+          <table class="data-table" style="margin:0">
+            <tr><th>Solvent</th><th>Solubility</th></tr>
+            <tr><td>Water (pH 1.2)</td><td style="color:var(--c6)">~0.03 mg/mL</td></tr>
+            <tr><td>Ethanol</td><td style="color:var(--c3)">~50 mg/mL</td></tr>
+            <tr><td>Stearic acid melt</td><td style="color:var(--c5)">~15–25 mg/mL</td></tr>
+            <tr><td>Oleic acid</td><td style="color:var(--c1)">~30+ mg/mL</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="warn-note">
+        Why add ethanol THEN lipid, not directly to lipid? Resveratrol has very low melt-solubility if added as dry powder — it aggregates before dissolving. Ethanol molecularly disperses it first, allowing clean transfer to the lipid phase without microcrystalline drug clusters, which would cause heterogeneous size distribution and poor EE%.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 5: EMULSION -->
+<div class="section" id="step-5" style="padding-top:0">
+  <div class="step-panel">
+    <div class="step-header" onclick="toggleStep('emulsion')">
+      <div class="step-num-badge" style="background:rgba(0,255,136,0.1);color:var(--c5);border:2px solid var(--c5);">
+        <span style="position:relative;z-index:1">04</span>
+      </div>
+      <div class="step-title-wrap">
+        <div class="step-num-label">STEP 04 — INTERFACIAL SCIENCE</div>
+        <div class="step-name">Aqueous Phase + Emulsification</div>
+        <div class="step-subtitle">Tween 80 + Poloxamer 188 — Dual Stabilization Strategy at the Interface</div>
+      </div>
+      <div class="step-temp-badge" style="color:var(--c5);border-color:var(--c5)">γ REDUCTION</div>
+    </div>
+    <div class="step-body open" id="body-emulsion">
+      <div class="canvas-wrap">
+        <div class="canvas-label">SURFACTANT INTERFACE — LIVE ANIMATION</div>
+        <canvas id="surfCanvas" height="300"></canvas>
+        <div class="canvas-controls">
+          <button class="ctrl-btn active" onclick="setSurfState('bare')">BARE DROPLET</button>
+          <button class="ctrl-btn" onclick="setSurfState('tween')">TWEEN 80 ADSORBS</button>
+          <button class="ctrl-btn" onclick="setSurfState('poloxamer')">POLOXAMER BRUSH</button>
+          <button class="ctrl-btn" onclick="setSurfState('full')">FULL STABILIZATION</button>
+          <button class="ctrl-btn" onclick="setSurfState('collision')">COLLISION TEST</button>
+        </div>
+      </div>
+
+      <div class="two-panel">
+        <div class="info-card" style="border-color:rgba(0,255,136,0.2)">
+          <h4 style="color:var(--c5)">TWEEN 80 — MECHANISM</h4>
+          <ul>
+            <li>Diffusion-controlled adsorption (fast, within ms)</li>
+            <li>HLB value = 15 → favors O/W emulsion</li>
+            <li>Hydrophobic C18:1 tail anchors into lipid surface</li>
+            <li>PEO head extends into water → steric + hydration barrier</li>
+            <li>Reduces γ (interfacial tension): ~30 → &lt;1 mN/m</li>
+            <li>Primary emulsifier — acts immediately at interface</li>
+          </ul>
+        </div>
+        <div class="info-card" style="border-color:rgba(180,79,255,0.2)">
+          <h4 style="color:var(--c4)">POLOXAMER 188 — MECHANISM</h4>
+          <ul>
+            <li>PPO block (hydrophobic middle) anchors to lipid surface</li>
+            <li>PEO blocks extend as hydrated brush (5–10 nm thickness)</li>
+            <li>Steric repulsion energy: scales as ∫π(D)dD (de Gennes theory)</li>
+            <li>Prevents van der Waals attraction between particles</li>
+            <li>Long-term colloidal stability (months)</li>
+            <li>Secondary stabilizer — works at longer range than Tween 80</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="science-note">
+        <strong>Why must aqueous phase be pre-heated to 75–80°C?</strong> If lipid (at 75°C) contacts cold water: immediate nucleation at the interface → rigid lipid shell forms around large droplets before emulsification can occur → particles are micron-range with poor size control. Temperature matching prevents <strong>interfacial crystallization</strong>, keeps lipid droplets fluid and deformable, and allows Tween 80 to adsorb properly before any solidification occurs.
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 6: SONICATION -->
+  <div class="step-panel" id="step-6">
+    <div class="step-header" onclick="toggleStep('sonic')">
+      <div class="step-num-badge" style="background:rgba(255,215,0,0.1);color:var(--c3);border:2px solid var(--c3);">
+        <span style="position:relative;z-index:1">05</span>
+      </div>
+      <div class="step-title-wrap">
+        <div class="step-num-label">STEP 05 — ACOUSTIC CAVITATION PHYSICS</div>
+        <div class="step-name">Ultrasonication — Nanofabrication</div>
+        <div class="step-subtitle">Inertial cavitation → shock waves → micro-jets → nano-droplets (100–300 nm)</div>
+      </div>
+      <div class="step-temp-badge" style="color:var(--c3);border-color:var(--c3)">⚡ 20–40 kHz</div>
+    </div>
+    <div class="step-body open" id="body-sonic">
+      <div class="canvas-wrap">
+        <div class="canvas-label">ACOUSTIC CAVITATION — REAL-TIME</div>
+        <canvas id="sonicCanvas" height="320"></canvas>
+        <div class="canvas-controls">
+          <button class="ctrl-btn active" onclick="setSonicState('off')">⬛ PROBE OFF</button>
+          <button class="ctrl-btn" onclick="setSonicState('waves')">〜 WAVES</button>
+          <button class="ctrl-btn" onclick="setSonicState('bubbles')">○ CAVITATION</button>
+          <button class="ctrl-btn" onclick="setSonicState('collapse')">💥 COLLAPSE</button>
+          <button class="ctrl-btn" onclick="setSonicState('nano')">◉ NANOPARTICLES</button>
+          <button class="ctrl-btn" onclick="setSonicState('pulse')">⚡ PULSE MODE</button>
+        </div>
+      </div>
+
+      <div class="thermo-panel">
+        <div class="thermo-card" style="border-color:rgba(255,107,53,0.3)">
+          <div class="thermo-value" style="color:var(--c2)">~5000K</div>
+          <div class="thermo-name">Local temperature at bubble collapse (transient, microsecond)</div>
+        </div>
+        <div class="thermo-card" style="border-color:rgba(255,215,0,0.3)">
+          <div class="thermo-value" style="color:var(--c3)">~1000 atm</div>
+          <div class="thermo-name">Local pressure at inertial cavitation collapse</div>
+        </div>
+        <div class="thermo-card" style="border-color:rgba(0,255,231,0.3)">
+          <div class="thermo-value" style="color:var(--c1)">400 m/s</div>
+          <div class="thermo-name">Micro-jet velocity from asymmetric bubble collapse near surface</div>
+        </div>
+        <div class="thermo-card" style="border-color:rgba(0,255,136,0.3)">
+          <div class="thermo-value" style="color:var(--c5)">100–300 nm</div>
+          <div class="thermo-name">Final nanoparticle size range after cavitation + cooling</div>
+        </div>
+      </div>
+
+      <div class="two-panel">
+        <div class="info-card">
+          <h4 style="color:var(--c3)">PULSE MODE (5s ON / 3s OFF)</h4>
+          <ul>
+            <li>Continuous sonication → bulk temp rises above 90°C</li>
+            <li>Above 90°C → resveratrol trans→cis isomerization</li>
+            <li>cis-resveratrol is biologically inactive (loses anti-cancer activity)</li>
+            <li>Pulse mode maintains bulk temp at ~35°C</li>
+            <li>Prevents surfactant polymer chain scission</li>
+            <li>Maintains dissolved O₂ at safe levels (prevents oxidation)</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h4 style="color:var(--c2)">DROPLET BREAKUP MECHANISM</h4>
+          <ul>
+            <li>Weber number (We) must exceed critical value for breakup</li>
+            <li>We = ρ·v²·r / γ → cavitation raises v dramatically</li>
+            <li>Shock waves deform large droplets (≥10 µm → &lt;300 nm)</li>
+            <li>Each breakup creates new interface → surfactant migrates</li>
+            <li>Incomplete surface coverage → coalescence → repeat cycling</li>
+            <li>Equilibrium particle size when We &lt; We_crit at all points</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 7: CRYSTALLIZATION -->
+<div class="section" id="step-7" style="padding-top:0">
+  <div class="step-panel">
+    <div class="step-header" onclick="toggleStep('crystal')">
+      <div class="step-num-badge" style="background:rgba(180,79,255,0.1);color:var(--c4);border:2px solid var(--c4);">
+        <span style="position:relative;z-index:1">06</span>
+      </div>
+      <div class="step-title-wrap">
+        <div class="step-num-label">STEP 06 — THE CRITICAL SLN FORMATION EVENT</div>
+        <div class="step-name">Ice Bath Cooling — Confined Crystallization</div>
+        <div class="step-subtitle">Nucleation kinetics → defect-mediated entrapment → kinetically trapped SLN</div>
+      </div>
+      <div class="step-temp-badge" style="color:var(--c4);border-color:var(--c4)">❄️ 0–4°C RAPID</div>
+    </div>
+    <div class="step-body open" id="body-crystal">
+      <div class="canvas-wrap">
+        <div class="canvas-label">CRYSTALLIZATION INSIDE A SINGLE NANODROPLET</div>
+        <canvas id="crystalCanvas" height="340"></canvas>
+        <div class="canvas-controls">
+          <button class="ctrl-btn active" onclick="setCrystalState('hot')">💧 HOT DROPLET</button>
+          <button class="ctrl-btn" onclick="setCrystalState('nucleate')">❄ NUCLEATION</button>
+          <button class="ctrl-btn" onclick="setCrystalState('grow')">🔷 CRYSTAL GROWS</button>
+          <button class="ctrl-btn" onclick="setCrystalState('trap')">◆ DRUG TRAPPED</button>
+          <button class="ctrl-btn" onclick="setCrystalState('sln')">✓ FINAL SLN</button>
+          <button class="ctrl-btn" onclick="setCrystalState('slow_vs_fast')">⚖ SLOW vs FAST</button>
+        </div>
+      </div>
+
+      <div class="science-note">
+        <strong>Confined Crystallization Theory:</strong> When a nano-sized lipid droplet solidifies, nucleation does not begin at 70°C (bulk MP). Due to <strong>supercooling in nanoscale confinement</strong>, nucleation is delayed until 10–30°C below the bulk MP. This supercooling increases the nucleation rate exponentially (Turnbull & Fisher equation: J = A·exp(−ΔG*/kT)). At high cooling rates, nucleation rate J &gt;&gt; crystal growth rate G, so <em>many small crystalline domains form simultaneously</em>, leaving disordered interstitial spaces — exactly where resveratrol gets physically trapped.
+      </div>
+
+      <div class="two-panel">
+        <div class="info-card" style="border-color:rgba(255,51,102,0.2)">
+          <h4 style="color:var(--c6)">SLOW COOLING (WRONG)</h4>
+          <ul>
+            <li>Few nucleation sites → large crystal domains grow</li>
+            <li>Long-range ordered lattice forms</li>
+            <li>Drug molecules have time to diffuse OUT of growing crystal</li>
+            <li>Oswald ripening can occur in larger crystalline zones</li>
+            <li>Result: Low EE%, high surface drug, high burst release</li>
+            <li>Particles may aggregate before solidification completes</li>
+          </ul>
+        </div>
+        <div class="info-card" style="border-color:rgba(0,255,136,0.2)">
+          <h4 style="color:var(--c5)">RAPID COOLING — ICE BATH (CORRECT)</h4>
+          <ul>
+            <li>High supercooling → massive nucleation simultaneously</li>
+            <li>J (nucleation rate) &gt;&gt; G (growth rate)</li>
+            <li>Many small imperfect crystalline domains form</li>
+            <li>Drug physically trapped before it can diffuse away</li>
+            <li>Result: High EE%, low burst, sustained release profile</li>
+            <li>This is <strong>defect-mediated kinetic entrapment</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="warn-note">
+        POLYMORPHIC RISK — Stearic acid can transition between α, β', and β polymorphs during storage. The β-form is most stable but has the tightest packing → drug expulsion over time. Oleic acid reduces this polymorphic transition by stabilizing the less-ordered α/β' form. This is why SLNs must be characterized by DSC (enthalpy of melting) and WAXS/XRD to monitor crystallinity over time.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEPS 8+9 -->
+<div class="section" id="step-8" style="padding-top:0">
+  <div class="step-panel">
+    <div class="step-header" onclick="toggleStep('dialysis')">
+      <div class="step-num-badge" style="background:rgba(0,255,231,0.1);color:var(--c1);border:2px solid var(--c1);">
+        <span style="position:relative;z-index:1">07</span>
+      </div>
+      <div class="step-title-wrap">
+        <div class="step-num-label">STEP 07 — MASS TRANSFER</div>
+        <div class="step-name">Dialysis Purification</div>
+        <div class="step-subtitle">Diffusion-controlled removal of free drug, ethanol, excess surfactant</div>
+      </div>
+      <div class="step-temp-badge" style="color:var(--c1);border-color:var(--c1)">4°C / 12–24h</div>
+    </div>
+    <div class="step-body open" id="body-dialysis">
+      <div class="canvas-wrap">
+        <div class="canvas-label">DIALYSIS MEMBRANE — SIZE EXCLUSION</div>
+        <canvas id="dialysisCanvas" height="280"></canvas>
+        <div class="canvas-controls">
+          <button class="ctrl-btn active" onclick="setDialysisState('start')">▶ START</button>
+          <button class="ctrl-btn" onclick="setDialysisState('diffuse')">→ DIFFUSION</button>
+          <button class="ctrl-btn" onclick="setDialysisState('complete')">✓ COMPLETE</button>
+        </div>
+      </div>
+
+      <div class="science-note">
+        <strong>Fick's First Law governs this step:</strong> J = −D · (dC/dx), where J is flux, D is diffusion coefficient, and dC/dx is concentration gradient across membrane. Free resveratrol (MW 228 Da) diffuses freely. SLN particles (~200 nm, effectively infinite MW relative to MWCO 14,000 Da) cannot. Using distilled water (C_outer = 0) maximizes the gradient dC/dx and drives complete removal of unencapsulated drug — essential for accurate EE% calculation.
+      </div>
+    </div>
+  </div>
+
+  <div class="step-panel" id="step-9">
+    <div class="step-header" onclick="toggleStep('lyophilize')">
+      <div class="step-num-badge" style="background:rgba(255,107,53,0.1);color:var(--c2);border:2px solid var(--c2);">
+        <span style="position:relative;z-index:1">08</span>
+      </div>
+      <div class="step-title-wrap">
+        <div class="step-num-label">STEP 08 — LYOPHILIZATION SCIENCE</div>
+        <div class="step-name">Freeze-Drying → 130 mg Powder</div>
+        <div class="step-subtitle">Mannitol cryoprotection → sublimation → free-flowing SLN powder</div>
+      </div>
+      <div class="step-temp-badge" style="color:var(--c2);border-color:var(--c2)">–20°C → –50°C vacuum</div>
+    </div>
+    <div class="step-body open" id="body-lyophilize">
+      <div class="canvas-wrap">
+        <div class="canvas-label">FREEZE-DRYING STAGES</div>
+        <canvas id="lyoCanvas" height="280"></canvas>
+        <div class="canvas-controls">
+          <button class="ctrl-btn active" onclick="setLyoState('liquid')">💧 LIQUID DISPERSION</button>
+          <button class="ctrl-btn" onclick="setLyoState('freeze')">❄ FREEZING –20°C</button>
+          <button class="ctrl-btn" onclick="setLyoState('primary')">↑ PRIMARY DRYING</button>
+          <button class="ctrl-btn" onclick="setLyoState('secondary')">✦ SECONDARY DRYING</button>
+          <button class="ctrl-btn" onclick="setLyoState('powder')">◎ 130mg POWDER</button>
+        </div>
+      </div>
+
+      <div class="warn-note">
+        Why only 130 mg? Target is 300–500 mg. Losses occur at: (1) dialysis — particles adsorb to membrane if mannitol insufficient; (2) freezing — particle aggregation if cryoprotectant concentration suboptimal (&lt;5% w/v mannitol); (3) primary drying — collapse of lyophilized cake if shelf temp too high; (4) reconstitution — irreversible aggregates if process not optimized. Optimization: increase mannitol to 5–10% w/v, add trehalose as co-protectant, optimize drying cycle.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONCLUSION -->
+<div class="section">
+  <div class="conclusion">
+    <div class="conclusion-inner">
+      <h2>THE COMPLETE MOLECULAR STORY</h2>
+      <p>
+        Resveratrol is first <em>molecularly solvated</em> by ethanol via hydrogen bonding with its phenolic –OH groups, then transfers by <em>thermodynamic partitioning</em> (log P = 3.1) into the molten stearic acid–oleic acid binary lipid melt. The oleic acid cis-double bond introduces <em>packing frustration</em> that will become critical defect sites. Ultrasonic <em>acoustic cavitation</em> (20–40 kHz, 5000K local collapse temperature) generates nano-droplets of 100–300 nm stabilized by a mixed Tween 80–Poloxamer 188 interfacial film (γ reduced to &lt;1 mN/m, steric brush layer via PEO chains). Rapid ice-bath quenching drives <em>confined crystallization</em> with nucleation rate far exceeding growth rate — the lipid solidifies into an imperfect lattice where oleic acid creates amorphous interstitial zones that <em>kinetically trap</em> resveratrol via defect-mediated entrapment. The final SLN is a <em>metastable, polymer-sterically stabilized, defect-engineered</em> solid lipid system. Drug release is governed by diffusion through this imperfect crystalline matrix — producing the characteristic <em>biphasic Higuchi-kinetics profile</em> of burst + sustained release.
+      </p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div style="margin-bottom:12px;font-size:14px;font-weight:900;letter-spacing:2px;background:linear-gradient(90deg,#00ffe7,#b44fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">NANO TRANSLATION LAB</div>
+  <div style="font-size:9px;letter-spacing:3px;color:rgba(0,255,231,0.3);margin-bottom:16px;">SLN MOLECULAR SCIENCE — ANIMATED DEEP DIVE</div>
+  <a href="hub.html" style="display:inline-block;font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;color:#00ffe7;border:1px solid rgba(0,255,231,0.3);padding:8px 20px;border-radius:6px;text-decoration:none;transition:all 0.3s;background:rgba(0,255,231,0.05);">← BACK TO PORTAL</a>
+</footer>
+
+<script>
+// ═══════════════════════════════════════
+// UTILITY
+// ═══════════════════════════════════════
+function resizeCanvas(canvas) {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width;
+}
+
+function scrollToStep(n) {
+  const ids = ['step-0','step-1','step-2','step-2','step-5','step-5','step-6','step-7','step-8','step-9'];
+  const el = document.getElementById(ids[n]);
+  if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',i===n));
+}
+
+function toggleStep(id) {
+  const body = document.getElementById('body-'+id);
+  if(body) body.classList.toggle('open');
+}
+
+// ═══════════════════════════════════════
+// HERO CANVAS — Floating animated SLN
+// ═══════════════════════════════════════
+const heroCanvas = document.getElementById('heroCanvas');
+resizeCanvas(heroCanvas);
+const hctx = heroCanvas.getContext('2d');
+let htime = 0;
+
+const heroParticles = [];
+for(let i=0;i<60;i++) {
+  heroParticles.push({
+    x: Math.random()*heroCanvas.width,
+    y: Math.random()*heroCanvas.height,
+    r: Math.random()*3+1,
+    vx: (Math.random()-0.5)*0.5,
+    vy: (Math.random()-0.5)*0.5,
+    type: Math.floor(Math.random()*4),
+    phase: Math.random()*Math.PI*2
+  });
+}
+
+function drawHero() {
+  hctx.clearRect(0,0,heroCanvas.width,heroCanvas.height);
+  htime += 0.02;
+
+  const cx = heroCanvas.width/2, cy = heroCanvas.height/2;
+  const colors = ['#00ffe7','#ff6b35','#ffd700','#b44fff','#00ff88'];
+
+  // Draw central SLN
+  const slnR = 70;
+  const grad = hctx.createRadialGradient(cx,cy,0,cx,cy,slnR);
+  grad.addColorStop(0,'rgba(0,255,231,0.15)');
+  grad.addColorStop(0.7,'rgba(0,255,231,0.08)');
+  grad.addColorStop(1,'rgba(0,255,231,0.02)');
+  hctx.beginPath(); hctx.arc(cx,cy,slnR,0,Math.PI*2);
+  hctx.fillStyle=grad; hctx.fill();
+  hctx.strokeStyle='rgba(0,255,231,0.4)'; hctx.lineWidth=1.5;
+  hctx.stroke();
+
+  // Rotating surfactant shell
+  for(let i=0;i<16;i++) {
+    const angle = (i/16)*Math.PI*2 + htime*0.3;
+    const tailX = cx + Math.cos(angle)*(slnR-5);
+    const tailY = cy + Math.sin(angle)*(slnR-5);
+    const headX = cx + Math.cos(angle)*(slnR+18);
+    const headY = cy + Math.sin(angle)*(slnR+18);
+    hctx.beginPath(); hctx.moveTo(tailX,tailY); hctx.lineTo(headX,headY);
+    hctx.strokeStyle='rgba(0,255,136,0.5)'; hctx.lineWidth=2; hctx.stroke();
+    hctx.beginPath(); hctx.arc(headX,headY,4,0,Math.PI*2);
+    hctx.fillStyle='rgba(0,255,136,0.6)'; hctx.fill();
+  }
+
+  // Drug molecules inside
+  for(let i=0;i<5;i++) {
+    const angle = (i/5)*Math.PI*2 + htime*0.15;
+    const r = 30 + Math.sin(htime*0.5+i)*8;
+    const dx = cx + Math.cos(angle)*r;
+    const dy = cy + Math.sin(angle)*r;
+    hctx.beginPath(); hctx.arc(dx,dy,6,0,Math.PI*2);
+    hctx.fillStyle='rgba(255,215,0,0.8)'; hctx.fill();
+    hctx.strokeStyle='rgba(255,215,0,0.4)'; hctx.lineWidth=1; hctx.stroke();
+  }
+
+  // Label
+  hctx.fillStyle='rgba(0,255,231,0.7)';
+  hctx.font='bold 11px Orbitron'; hctx.textAlign='center';
+  hctx.fillText('RESVERATROL-SLN',cx,cy+4);
+  hctx.fillStyle='rgba(255,215,0,0.6)';
+  hctx.font='9px Exo 2'; hctx.fillText('~200 nm',cx,cy+18);
+
+  // Floating particles
+  heroParticles.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    if(p.x<0||p.x>heroCanvas.width) p.vx*=-1;
+    if(p.y<0||p.y>heroCanvas.height) p.vy*=-1;
+    const dist = Math.sqrt((p.x-cx)**2+(p.y-cy)**2);
+    if(dist < slnR+25) { p.vx*=-1; p.vy*=-1; }
+    p.phase += 0.02;
+    hctx.beginPath(); hctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    hctx.fillStyle=colors[p.type]+'99'; hctx.fill();
+  });
+
+  // Connection lines between nearby particles
+  heroParticles.forEach((p1,i)=>{
+    heroParticles.slice(i+1).forEach(p2=>{
+      const d=Math.sqrt((p1.x-p2.x)**2+(p1.y-p2.y)**2);
+      if(d<80){
+        hctx.beginPath(); hctx.moveTo(p1.x,p1.y); hctx.lineTo(p2.x,p2.y);
+        hctx.strokeStyle=`rgba(0,255,231,${0.1*(1-d/80)})`; hctx.lineWidth=0.5; hctx.stroke();
+      }
+    });
+  });
+
+  requestAnimationFrame(drawHero);
+}
+drawHero();
+
+// ═══════════════════════════════════════
+// MATERIALS CANVAS
+// ═══════════════════════════════════════
+const matCanvas = document.getElementById('materialsCanvas');
+resizeCanvas(matCanvas);
+const mctx = matCanvas.getContext('2d');
+let currentMaterial = 'stearic';
+let matAnim = 0;
+
+function showMaterial(m) {
+  currentMaterial = m;
+  document.querySelectorAll('.canvas-controls .ctrl-btn').forEach(b=>{
+    b.classList.toggle('active', b.textContent.toLowerCase().includes(m.substring(0,5)));
+  });
+}
+
+function drawMaterials() {
+  mctx.clearRect(0,0,matCanvas.width,matCanvas.height);
+  matAnim += 0.02;
+  const W=matCanvas.width, H=matCanvas.height;
+
+  const info = {
+    stearic: {
+      name:'STEARIC ACID (C18:0)',
+      color:'#00ffe7',
+      desc:'Saturated C18 chain — ordered crystal matrix — van der Waals packing',
+      formula:'CH₃-(CH₂)₁₆-COOH',
+      draw: drawStearicMolecule
+    },
+    oleic: {
+      name:'OLEIC ACID (C18:1, cis)',
+      color:'#ff6b35',
+      desc:'One cis double bond — kinked geometry — disrupts crystal lattice',
+      formula:'CH₃-(CH₂)₇-CH=CH-(CH₂)₇-COOH',
+      draw: drawOleicMolecule
+    },
+    resveratrol: {
+      name:'RESVERATROL (MW 228)',
+      color:'#ffd700',
+      desc:'Polyphenolic stilbene — 3× phenolic OH — aromatic hydrophobic core',
+      formula:'C₁₄H₁₂O₃',
+      draw: drawResveratrolMolecule
+    },
+    tween: {
+      name:'TWEEN 80 (Polysorbate 80)',
+      color:'#00ff88',
+      desc:'Non-ionic surfactant — HLB 15 — primary emulsifier',
+      formula:'Polyoxyethylene sorbitan monooleate',
+      draw: drawTweenMolecule
+    },
+    poloxamer: {
+      name:'POLOXAMER 188',
+      color:'#b44fff',
+      desc:'PEO-PPO-PEO triblock — steric stabilizer — brush layer formation',
+      formula:'HO(C₂H₄O)₇₅(C₃H₆O)₃₀(C₂H₄O)₇₅H',
+      draw: drawPoloxamerMolecule
+    },
+    all: {
+      name:'ALL COMPONENTS — SYSTEM VIEW',
+      color:'#00ffe7',
+      desc:'Complete SLN system — three-phase evolving metastable structure',
+      formula:'SLN Nanosystem',
+      draw: drawAllComponents
+    }
+  };
+
+  const mat = info[currentMaterial] || info.stearic;
+  // Background label
+  mctx.fillStyle='rgba(224,240,255,0.04)';
+  mctx.font=`bold 80px Orbitron`;
+  mctx.textAlign='center';
+  mctx.fillText(currentMaterial.toUpperCase().substring(0,4), W/2, H/2+30);
+
+  mat.draw(mctx, W, H, matAnim, mat.color);
+
+  // Info overlay
+  mctx.fillStyle=mat.color;
+  mctx.font='bold 13px Orbitron'; mctx.textAlign='left';
+  mctx.fillText(mat.name, 16, 26);
+  mctx.fillStyle='rgba(224,240,255,0.5)';
+  mctx.font='12px Exo 2';
+  mctx.fillText(mat.formula, 16, 44);
+  mctx.fillStyle='rgba(224,240,255,0.4)';
+  mctx.font='11px Exo 2';
+  mctx.fillText(mat.desc, 16, H-16);
+
+  requestAnimationFrame(drawMaterials);
+}
+
+function drawStearicMolecule(ctx, W, H, t, color) {
+  const cx=W/2, cy=H/2;
+  // Animated chain
+  ctx.strokeStyle=color; ctx.lineWidth=3; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(cx-160, cy);
+  for(let i=0;i<=16;i++) {
+    const x = cx-160+i*20;
+    const y = cy + Math.sin(t*0.5+i*0.3)*3;
+    ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  // COOH head
+  ctx.beginPath(); ctx.arc(cx-165, cy, 10, 0, Math.PI*2);
+  ctx.fillStyle=color+'44'; ctx.fill();
+  ctx.strokeStyle=color; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle='white'; ctx.font='10px Exo 2'; ctx.textAlign='center';
+  ctx.fillText('COOH',cx-165,cy+4);
+  // Methyl end
+  ctx.beginPath(); ctx.arc(cx+165, cy, 7, 0, Math.PI*2);
+  ctx.fillStyle=color+'66'; ctx.fill();
+  ctx.fillStyle='white'; ctx.font='9px Exo 2';
+  ctx.fillText('CH₃',cx+165,cy+3);
+  // Packing - show multiple chains
+  for(let row=-2;row<=2;row++) {
+    if(row===0) continue;
+    const ry = cy+row*25;
+    ctx.globalAlpha=0.25;
+    ctx.strokeStyle=color; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(cx-160,ry); ctx.lineTo(cx+165,ry); ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+}
+
+function drawOleicMolecule(ctx, W, H, t, color) {
+  const cx=W/2, cy=H/2;
+  ctx.strokeStyle=color; ctx.lineWidth=3; ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(cx-160, cy);
+  for(let i=0;i<=7;i++) ctx.lineTo(cx-160+i*20, cy);
+  // The cis double bond kink
+  const kinkX = cx-160+7*20;
+  ctx.lineTo(kinkX+10, cy-30+Math.sin(t)*5);
+  ctx.lineTo(kinkX+30, cy-30+Math.sin(t)*5);
+  // Continue after kink
+  for(let i=0;i<=7;i++) ctx.lineTo(kinkX+30+i*20, cy+Math.sin(t*0.5)*3);
+  ctx.stroke();
+  // Highlight cis bond
+  ctx.beginPath();
+  ctx.arc(kinkX+20, cy-30+Math.sin(t)*5, 15, 0, Math.PI*2);
+  ctx.strokeStyle='#ffd700'; ctx.lineWidth=2; ctx.setLineDash([3,3]);
+  ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle='#ffd700'; ctx.font='bold 10px Orbitron'; ctx.textAlign='center';
+  ctx.fillText('cis', kinkX+20, cy-30+Math.sin(t)*5+4);
+  ctx.fillStyle='rgba(255,215,0,0.7)'; ctx.font='10px Exo 2';
+  ctx.fillText('KINK = lattice disruptor', kinkX+20, cy-50);
+  // COOH
+  ctx.beginPath(); ctx.arc(cx-165, cy, 10, 0, Math.PI*2);
+  ctx.fillStyle=color+'44'; ctx.fill();
+  ctx.strokeStyle=color; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle='white'; ctx.font='9px Exo 2'; ctx.fillText('COOH',cx-165,cy+4);
+}
+
+function drawResveratrolMolecule(ctx, W, H, t, color) {
+  const cx=W/2, cy=H/2;
+  // Ring A (left)
+  const r=28;
+  ctx.strokeStyle=color; ctx.lineWidth=2.5;
+  for(let i=0;i<6;i++) {
+    const a1=(i/6)*Math.PI*2-Math.PI/6;
+    const a2=((i+1)/6)*Math.PI*2-Math.PI/6;
+    ctx.beginPath();
+    ctx.moveTo(cx-90+Math.cos(a1)*r, cy+Math.sin(a1)*r);
+    ctx.lineTo(cx-90+Math.cos(a2)*r, cy+Math.sin(a2)*r);
+    ctx.stroke();
+    if(i%2===0) { // double bonds
+      ctx.beginPath();
+      ctx.moveTo(cx-90+Math.cos(a1)*22, cy+Math.sin(a1)*22);
+      ctx.lineTo(cx-90+Math.cos(a2)*22, cy+Math.sin(a2)*22);
+      ctx.strokeStyle=color+'88'; ctx.lineWidth=1.5; ctx.stroke();
+      ctx.strokeStyle=color; ctx.lineWidth=2.5;
+    }
+  }
+  // OH groups on ring A
+  const ohPositions = [[-115,cy-15],[-115,cy+15]];
+  ohPositions.forEach(([ox,oy]) => {
+    ctx.beginPath(); ctx.moveTo(cx-90,oy); ctx.lineTo(ox,oy);
+    ctx.strokeStyle='#00ff88'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(ox,oy,8,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,255,136,0.3)'; ctx.fill();
+    ctx.fillStyle='#00ff88'; ctx.font='9px Exo 2'; ctx.textAlign='center';
+    ctx.fillText('OH',ox,oy+3);
+    ctx.strokeStyle=color;
+  });
+  // Double bond bridge
+  ctx.beginPath(); ctx.moveTo(cx-62,cy); ctx.lineTo(cx+62,cy);
+  ctx.strokeStyle=color; ctx.lineWidth=3; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx-62,cy-4); ctx.lineTo(cx+62,cy-4);
+  ctx.strokeStyle=color+'66'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.fillStyle='#ffd700'; ctx.font='9px Orbitron'; ctx.textAlign='center';
+  ctx.fillText('trans',cx,cy-12);
+  // Ring B (right)
+  for(let i=0;i<6;i++) {
+    const a1=(i/6)*Math.PI*2-Math.PI/6;
+    const a2=((i+1)/6)*Math.PI*2-Math.PI/6;
+    ctx.beginPath();
+    ctx.moveTo(cx+90+Math.cos(a1)*r, cy+Math.sin(a1)*r);
+    ctx.lineTo(cx+90+Math.cos(a2)*r, cy+Math.sin(a2)*r);
+    ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.stroke();
+  }
+  // Single OH on ring B
+  ctx.beginPath(); ctx.moveTo(cx+90+r,cy); ctx.lineTo(cx+125,cy);
+  ctx.strokeStyle='#00ff88'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx+130,cy,8,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,255,136,0.3)'; ctx.fill();
+  ctx.fillStyle='#00ff88'; ctx.font='9px Exo 2'; ctx.textAlign='center';
+  ctx.fillText('OH',cx+130,cy+3);
+  // Glow effect
+  ctx.shadowColor=color; ctx.shadowBlur=10+Math.sin(t)*5;
+  ctx.fillStyle=color+'11'; ctx.beginPath(); ctx.arc(cx,cy,70,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.fillStyle='rgba(224,240,255,0.5)'; ctx.font='11px Exo 2'; ctx.textAlign='center';
+  ctx.fillText('3× phenolic –OH + aromatic core + trans double bond',cx,cy+80);
+}
+
+function drawTweenMolecule(ctx, W, H, t, color) {
+  const cx=W/2, cy=H/2;
+  // Head (hydrophilic - circles)
+  ctx.fillStyle=color+'33'; ctx.strokeStyle=color; ctx.lineWidth=2;
+  for(let i=0;i<5;i++) {
+    const angle = (i/5)*Math.PI*2+t*0.2;
+    const hx = cx-80+Math.cos(angle)*35;
+    const hy = cy+Math.sin(angle)*35;
+    ctx.beginPath(); ctx.arc(hx,hy,12,0,Math.PI*2);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle='rgba(224,240,255,0.7)'; ctx.font='8px Exo 2'; ctx.textAlign='center';
+    ctx.fillText('PEO',hx,hy+3);
+    ctx.fillStyle=color+'33';
+  }
+  // Sorbitan core
+  ctx.beginPath(); ctx.arc(cx-80,cy,18,0,Math.PI*2);
+  ctx.fillStyle=color+'55'; ctx.fill();
+  ctx.strokeStyle=color; ctx.stroke();
+  ctx.fillStyle='white'; ctx.font='bold 9px Orbitron'; ctx.textAlign='center';
+  ctx.fillText('SORB',cx-80,cy+4);
+  // Tail (hydrophobic - line)
+  ctx.strokeStyle=color; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(cx-62,cy);
+  for(let i=0;i<=18;i++) {
+    ctx.lineTo(cx-62+i*12, cy+Math.sin(t*0.5+i*0.4)*5);
+  }
+  ctx.stroke();
+  // Labels
+  ctx.fillStyle='rgba(224,240,255,0.6)'; ctx.font='11px Exo 2'; ctx.textAlign='center';
+  ctx.fillText('← Hydrophilic head (water-facing)', cx-80, cy+60);
+  ctx.fillText('Hydrophobic C18:1 tail (lipid-anchoring) →', cx+60, cy-30);
+  ctx.strokeStyle='rgba(224,240,255,0.2)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(cx-62,cy-25); ctx.lineTo(cx-62,cy+25); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(0,255,231,0.5)'; ctx.font='10px Orbitron'; ctx.textAlign='center';
+  ctx.fillText('LIPID | WATER INTERFACE',cx-62,cy-35);
+}
+
+function drawPoloxamerMolecule(ctx, W, H, t, color) {
+  const cx=W/2, cy=H/2+10;
+  const colors = { peo:'#00ffe7', ppo:'#b44fff' };
+  // PEO left block
+  for(let i=0;i<8;i++) {
+    const x = cx-200+i*22;
+    ctx.beginPath(); ctx.arc(x, cy+Math.sin(t*0.3+i*0.5)*8, 10, 0, Math.PI*2);
+    ctx.fillStyle=colors.peo+'44'; ctx.fill();
+    ctx.strokeStyle=colors.peo; ctx.lineWidth=1.5; ctx.stroke();
+    if(i>0) {
+      ctx.beginPath();
+      ctx.moveTo(cx-200+(i-1)*22,cy+Math.sin(t*0.3+(i-1)*0.5)*8);
+      ctx.lineTo(x,cy+Math.sin(t*0.3+i*0.5)*8);
+      ctx.strokeStyle=colors.peo+'88'; ctx.lineWidth=2; ctx.stroke();
+    }
+  }
+  // PPO middle block (anchors)
+  for(let i=0;i<6;i++) {
+    const x = cx-30+i*20;
+    const y = cy + Math.sin(t*0.5+i*0.8)*6;
+    ctx.beginPath(); ctx.arc(x, y, 13, 0, Math.PI*2);
+    ctx.fillStyle=colors.ppo+'44'; ctx.fill();
+    ctx.strokeStyle=colors.ppo; ctx.lineWidth=2; ctx.stroke();
+    if(i>0){
+      ctx.beginPath();
+      ctx.moveTo(cx-30+(i-1)*20,cy+Math.sin(t*0.5+(i-1)*0.8)*6);
+      ctx.lineTo(x,y);
+      ctx.strokeStyle=colors.ppo+'88'; ctx.lineWidth=2.5; ctx.stroke();
+    }
+  }
+  // PEO right block
+  for(let i=0;i<8;i++) {
+    const x = cx+73+i*22;
+    ctx.beginPath(); ctx.arc(x, cy+Math.sin(t*0.3+(i+14)*0.5)*8, 10, 0, Math.PI*2);
+    ctx.fillStyle=colors.peo+'44'; ctx.fill();
+    ctx.strokeStyle=colors.peo; ctx.lineWidth=1.5; ctx.stroke();
+    if(i>0) {
+      ctx.beginPath();
+      ctx.moveTo(cx+73+(i-1)*22,cy+Math.sin(t*0.3+(i-1+14)*0.5)*8);
+      ctx.lineTo(x,cy+Math.sin(t*0.3+(i+14)*0.5)*8);
+      ctx.strokeStyle=colors.peo+'88'; ctx.lineWidth=2; ctx.stroke();
+    }
+  }
+  // Labels
+  ctx.fillStyle=colors.peo; ctx.font='11px Orbitron'; ctx.textAlign='center';
+  ctx.fillText('PEO (hydrophilic)', cx-125, cy-30);
+  ctx.fillStyle=colors.ppo;
+  ctx.fillText('PPO (hydrophobic anchor)', cx+20, cy+50);
+  ctx.fillStyle=colors.peo;
+  ctx.fillText('PEO (hydrophilic)', cx+160, cy-30);
+  ctx.fillStyle='rgba(224,240,255,0.4)'; ctx.font='11px Exo 2';
+  ctx.fillText('Steric brush layer — prevents nanoparticle coalescence via de Gennes repulsion theory', cx, cy+80);
+}
+
+function drawAllComponents(ctx, W, H, t, color) {
+  const cx=W/2, cy=H/2;
+  const r=70;
+  // Central SLN particle
+  const grad=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+  grad.addColorStop(0,'rgba(0,255,231,0.15)');
+  grad.addColorStop(0.6,'rgba(0,255,231,0.06)');
+  grad.addColorStop(1,'rgba(0,255,231,0.01)');
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.fillStyle=grad; ctx.fill();
+  ctx.strokeStyle='rgba(0,255,231,0.5)'; ctx.lineWidth=2; ctx.stroke();
+  // Stearic acid chains inside
+  for(let i=0;i<8;i++){
+    const angle=(i/8)*Math.PI*2;
+    const x1=cx+Math.cos(angle)*15, y1=cy+Math.sin(angle)*15;
+    const x2=cx+Math.cos(angle)*55, y2=cy+Math.sin(angle)*55;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+    ctx.strokeStyle='rgba(0,255,231,0.3)'; ctx.lineWidth=2; ctx.stroke();
+  }
+  // Resveratrol inside
+  for(let i=0;i<3;i++){
+    const angle=(i/3)*Math.PI*2+t*0.2;
+    const rx=cx+Math.cos(angle)*30, ry=cy+Math.sin(angle)*30;
+    ctx.beginPath(); ctx.arc(rx,ry,7,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,215,0,0.8)'; ctx.fill();
+  }
+  // Tween 80 shell
+  for(let i=0;i<14;i++){
+    const angle=(i/14)*Math.PI*2+t*0.1;
+    const tx=cx+Math.cos(angle)*(r-2), ty=cy+Math.sin(angle)*(r-2);
+    const hx=cx+Math.cos(angle)*(r+14), hy=cy+Math.sin(angle)*(r+14);
+    ctx.beginPath(); ctx.moveTo(tx,ty); ctx.lineTo(hx,hy);
+    ctx.strokeStyle='rgba(0,255,136,0.6)'; ctx.lineWidth=2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(hx,hy,4,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,255,136,0.5)'; ctx.fill();
+  }
+  // Poloxamer brush
+  for(let i=0;i<8;i++){
+    const angle=(i/8)*Math.PI*2+t*0.05;
+    const base=r+18;
+    for(let j=0;j<5;j++){
+      const br=base+j*8;
+      const bangle=angle+(j-2)*0.15;
+      const bx=cx+Math.cos(bangle)*br, by=cy+Math.sin(bangle)*br;
+      ctx.beginPath(); ctx.arc(bx,by,3,0,Math.PI*2);
+      ctx.fillStyle=`rgba(180,79,255,${0.6-j*0.1})`; ctx.fill();
+    }
+  }
+  ctx.fillStyle='rgba(224,240,255,0.6)'; ctx.font='10px Orbitron'; ctx.textAlign='center';
+  ctx.fillText('COMPLETE SLN NANOPARTICLE',cx,cy+r+80);
+  ctx.fillStyle='rgba(224,240,255,0.3)'; ctx.font='9px Exo 2';
+  ctx.fillText('🟡 Resveratrol  ✦ Stearic acid core  ◦ Tween 80  ● Poloxamer brush',cx,cy+r+96);
+}
+
+drawMaterials();
+
+// ═══════════════════════════════════════
+// MELT CANVAS
+// ═══════════════════════════════════════
+const meltCanvas = document.getElementById('meltCanvas');
+resizeCanvas(meltCanvas);
+const meltCtx = meltCanvas.getContext('2d');
+let meltState = 'solid';
+let meltAnim = 0;
+let meltChains = [];
+let drugMols = [];
+
+function initMelt(state) {
+  const W=meltCanvas.width, H=meltCanvas.height;
+  meltChains=[];
+  drugMols=[];
+  const cols=20;
+  for(let i=0;i<cols;i++){
+    meltChains.push({
+      x: 30+i*(W-60)/cols,
+      y: H/2,
+      disorder: state==='molten'||state==='drug' ? 1 : 0,
+      wobble: Math.random()*Math.PI*2,
+      len: 80
+    });
+  }
+  if(state==='drug'){
+    for(let i=0;i<8;i++){
+      drugMols.push({
+        x:100+Math.random()*(W-200),
+        y:H/4+Math.random()*H/2,
+        vx:(Math.random()-0.5)*1.5,
+        vy:(Math.random()-0.5)*1.5
+      });
+    }
+  }
+}
+initMelt('solid');
+
+function setMeltState(s) {
+  meltState=s;
+  initMelt(s);
+  ['solid','heating','molten','drug'].forEach(id=>{
+    const b=document.getElementById('btn-'+id);
+    if(b)b.classList.toggle('active',id===s);
+  });
+}
+
+function drawMelt() {
+  const W=meltCanvas.width, H=meltCanvas.height;
+  meltCtx.clearRect(0,0,W,H);
+  meltAnim+=0.03;
+
+  const isHot = meltState==='molten'||meltState==='drug'||meltState==='heating';
+
+  // Background
+  if(meltState==='heating'){
+    const heatGrad=meltCtx.createRadialGradient(W/2,H,0,W/2,H,H);
+    heatGrad.addColorStop(0,'rgba(255,107,53,0.15)');
+    heatGrad.addColorStop(1,'transparent');
+    meltCtx.fillStyle=heatGrad; meltCtx.fillRect(0,0,W,H);
+    // Heat particles
+    for(let i=0;i<5;i++){
+      const hx=(i/5)*W+Math.sin(meltAnim*2+i)*30;
+      const hy=H-30+Math.sin(meltAnim*3+i)*10;
+      meltCtx.beginPath(); meltCtx.arc(hx,hy,4+Math.sin(meltAnim+i)*2,0,Math.PI*2);
+      meltCtx.fillStyle='rgba(255,107,53,0.6)'; meltCtx.fill();
+    }
+  }
+
+  // Draw chains
+  meltChains.forEach((chain,i)=>{
+    const targetDisorder = isHot ? 1 : 0;
+    chain.disorder += (targetDisorder-chain.disorder)*0.05;
+    chain.wobble += 0.04;
+
+    const segments=8;
+    meltCtx.strokeStyle=isHot ? '#ff6b35' : '#00ffe7';
+    meltCtx.lineWidth=2.5; meltCtx.lineCap='round';
+    meltCtx.beginPath();
+    let cx=chain.x, cy2=H/2-chain.len/2;
+    meltCtx.moveTo(cx,cy2);
+    for(let s=1;s<=segments;s++){
+      const progress=s/segments;
+      const wobbleAmt=chain.disorder*15;
+      const nx=cx+Math.sin(chain.wobble*1.5+s*0.8+i*0.3)*wobbleAmt;
+      const ny=cy2+progress*chain.len+Math.cos(chain.wobble+s)*wobbleAmt*0.5;
+      meltCtx.lineTo(nx,ny);
+    }
+    meltCtx.stroke();
+    // Head atom
+    meltCtx.beginPath(); meltCtx.arc(cx,H/2-chain.len/2,5,0,Math.PI*2);
+    meltCtx.fillStyle=(isHot?'#ff6b35':'#00ffe7')+'88'; meltCtx.fill();
+    // VdW forces visualization (solid only)
+    if(!isHot && i<meltChains.length-1){
+      meltCtx.beginPath();
+      meltCtx.moveTo(chain.x+chain.len*0.3,H/2);
+      meltCtx.lineTo(meltChains[i+1].x-chain.len*0.3,H/2);
+      meltCtx.strokeStyle='rgba(0,255,231,0.15)'; meltCtx.lineWidth=1;
+      meltCtx.setLineDash([2,4]); meltCtx.stroke(); meltCtx.setLineDash([]);
+    }
+  });
+
+  // Drug molecules in drug state
+  if(meltState==='drug'){
+    drugMols.forEach(d=>{
+      d.x+=d.vx; d.y+=d.vy;
+      if(d.x<50||d.x>W-50) d.vx*=-1;
+      if(d.y<50||d.y>H-50) d.vy*=-1;
+      meltCtx.beginPath(); meltCtx.arc(d.x,d.y,9,0,Math.PI*2);
+      const dgrad=meltCtx.createRadialGradient(d.x,d.y,0,d.x,d.y,9);
+      dgrad.addColorStop(0,'rgba(255,215,0,0.9)');
+      dgrad.addColorStop(1,'rgba(255,215,0,0.2)');
+      meltCtx.fillStyle=dgrad; meltCtx.fill();
+      meltCtx.strokeStyle='rgba(255,215,0,0.5)'; meltCtx.lineWidth=1; meltCtx.stroke();
+      meltCtx.fillStyle='rgba(255,215,0,0.8)'; meltCtx.font='7px Exo 2'; meltCtx.textAlign='center';
+      meltCtx.fillText('RSV',d.x,d.y+3);
+    });
+  }
+
+  // State label
+  const labels={
+    solid:'🔷 SOLID CRYSTAL — Ordered lamellar lattice | Low conformational entropy | Van der Waals packing intact',
+    heating:'🔥 HEATING 75–80°C — ΔGfusion → 0 | Lattice energy being overcome | Van der Waals bonds breaking',
+    molten:'💧 MOLTEN LIPID — Disordered chains | High conformational entropy | Drug can now dissolve',
+    drug:'◆ + RESVERATROL — Drug partitions from EtOH into lipid | Hydrophobic + π-alkyl interactions | Molecularly dispersed'
+  };
+  meltCtx.fillStyle='rgba(224,240,255,0.6)'; meltCtx.font='11px Exo 2'; meltCtx.textAlign='center';
+  meltCtx.fillText(labels[meltState]||'', W/2, H-12);
+
+  requestAnimationFrame(drawMelt);
+}
+drawMelt();
+
+// ═══════════════════════════════════════
+// OLEIC CANVAS
+// ═══════════════════════════════════════
+const oleicCanvas = document.getElementById('oleicCanvas');
+resizeCanvas(oleicCanvas);
+const octx = oleicCanvas.getContext('2d');
+let oleicView='pure', oleicAnim=0;
+
+function setOleicView(v){ oleicView=v; }
+
+function drawOleicView(){
+  const W=oleicCanvas.width, H=oleicCanvas.height;
+  octx.clearRect(0,0,W,H);
+  oleicAnim+=0.025;
+
+  if(oleicView==='compare'){
+    // Left half: pure stearic
+    drawLattice(octx, 0, 0, W/2, H, false, false, oleicAnim);
+    octx.fillStyle='rgba(255,51,102,0.7)'; octx.font='bold 11px Orbitron'; octx.textAlign='center';
+    octx.fillText('PURE STEARIC ACID', W/4, 22);
+    octx.fillStyle='rgba(255,51,102,0.5)'; octx.font='10px Exo 2';
+    octx.fillText('High order → low EE%', W/4, 36);
+    // Right half: mixed
+    drawLattice(octx, W/2, 0, W/2, H, true, true, oleicAnim);
+    octx.fillStyle='rgba(0,255,136,0.7)'; octx.font='bold 11px Orbitron'; octx.textAlign='center';
+    octx.fillText('+ OLEIC ACID (DEFECT-RICH)', 3*W/4, 22);
+    octx.fillStyle='rgba(0,255,136,0.5)'; octx.font='10px Exo 2';
+    octx.fillText('Disorder → high EE% → drug trapped', 3*W/4, 36);
+    // Divider
+    octx.beginPath(); octx.moveTo(W/2,0); octx.lineTo(W/2,H);
+    octx.strokeStyle='rgba(255,255,255,0.2)'; octx.lineWidth=2; octx.stroke();
+  } else {
+    const useOleic = oleicView==='mixed'||oleicView==='drug';
+    const showDrug = oleicView==='drug';
+    drawLattice(octx, 0, 0, W, H, useOleic, showDrug, oleicAnim);
+  }
+  requestAnimationFrame(drawOleicView);
+}
+
+function drawLattice(ctx, ox, oy, W, H, useOleic, showDrug, t){
+  const rows=5, cols=Math.floor(W/25);
+  const cellW=W/cols, cellH=(H-80)/rows;
+  ctx.save(); ctx.translate(ox,oy);
+
+  // Determine which columns have oleic acid (bent chains)
+  const oleicCols = useOleic ? [2,5,8,11,14,17].filter(c=>c<cols) : [];
+
+  for(let row=0;row<rows;row++){
+    for(let col=0;col<cols;col++){
+      const isOleic = useOleic && oleicCols.includes(col);
+      const cx2=col*cellW+cellW/2, cy2=40+row*cellH+cellH/2;
+      ctx.strokeStyle=isOleic?'#ff6b35':'#00ffe7';
+      ctx.lineWidth=2; ctx.lineCap='round';
+      ctx.beginPath();
+      if(isOleic){
+        // Kinked chain
+        const kinkY=cy2-cellH*0.1;
+        ctx.moveTo(cx2, cy2-cellH/2);
+        ctx.lineTo(cx2, kinkY);
+        ctx.lineTo(cx2+10+Math.sin(t*0.5)*3, kinkY+8);
+        ctx.lineTo(cx2+10+Math.sin(t*0.5)*3, kinkY+16);
+        ctx.lineTo(cx2, kinkY+22);
+        ctx.lineTo(cx2, cy2+cellH/2);
+      } else {
+        ctx.moveTo(cx2, cy2-cellH/2);
+        ctx.lineTo(cx2+Math.sin(t*0.3+row+col)*2, cy2+cellH/2);
+      }
+      ctx.stroke();
+      // Head
+      ctx.beginPath(); ctx.arc(cx2, cy2-cellH/2, 4, 0, Math.PI*2);
+      ctx.fillStyle=(isOleic?'#ff6b35':'#00ffe7')+'88'; ctx.fill();
+    }
+  }
+
+  // Drug molecules in defect spaces
+  if(showDrug && useOleic){
+    oleicCols.forEach((col,idx)=>{
+      if(col+1 < cols){
+        const dx=(col+0.5)*cellW+cellW/2;
+        const dy=40+(1+idx%4)*cellH+cellH/2;
+        ctx.beginPath(); ctx.arc(dx,dy,9,0,Math.PI*2);
+        const dg=ctx.createRadialGradient(dx,dy,0,dx,dy,9);
+        dg.addColorStop(0,'rgba(255,215,0,0.9)');
+        dg.addColorStop(1,'rgba(255,215,0,0.2)');
+        ctx.fillStyle=dg; ctx.fill();
+        ctx.strokeStyle='rgba(255,215,0,0.5)'; ctx.lineWidth=1.5; ctx.stroke();
+        ctx.fillStyle='rgba(255,215,0,0.8)'; ctx.font='7px Exo 2'; ctx.textAlign='center';
+        ctx.fillText('RSV',dx,dy+3);
+        // Circle showing defect zone
+        ctx.beginPath(); ctx.arc(dx,dy,18,0,Math.PI*2);
+        ctx.strokeStyle='rgba(255,215,0,0.3)'; ctx.lineWidth=1; ctx.setLineDash([2,3]);
+        ctx.stroke(); ctx.setLineDash([]);
+      }
+    });
+  }
+
+  // Legend
+  ctx.fillStyle='rgba(0,255,231,0.6)'; ctx.font='10px Exo 2'; ctx.textAlign='left';
+  ctx.fillText('■ = Stearic acid (straight)', 10, H-40);
+  if(useOleic){
+    ctx.fillStyle='rgba(255,107,53,0.6)';
+    ctx.fillText('⌇ = Oleic acid (kinked)', 10, H-25);
+  }
+  if(showDrug){
+    ctx.fillStyle='rgba(255,215,0,0.7)';
+    ctx.fillText('◆ = Resveratrol trapped in defect', 10, H-10);
+  }
+  ctx.restore();
+}
+drawOleicView();
+
+// ═══════════════════════════════════════
+// DRUG PARTITIONING CANVAS
+// ═══════════════════════════════════════
+const drugCanvas = document.getElementById('drugCanvas');
+resizeCanvas(drugCanvas);
+const dctx = drugCanvas.getContext('2d');
+let drugAnimState='ethanol', drugAnim=0;
+let drugParticles=[];
+
+function setDrugState(s){
+  drugAnimState=s;
+  initDrugParticles(s);
+}
+
+function initDrugParticles(state){
+  drugParticles=[];
+  const W=drugCanvas.width;
+  const num = 12;
+  for(let i=0;i<num;i++){
+    let x,y;
+    if(state==='ethanol'||state==='interface') { x=50+Math.random()*150; y=40+Math.random()*200; }
+    else if(state==='partition') { x=180+Math.random()*100; y=40+Math.random()*200; }
+    else { x=350+Math.random()*200; y=40+Math.random()*200; }
+    drugParticles.push({x,y,vx:(Math.random()-0.5)*1.2,vy:(Math.random()-0.5)*1.2,targetX:0});
+  }
+}
+initDrugParticles('ethanol');
+
+function drawDrugPartition(){
+  const W=drugCanvas.width, H=drugCanvas.height;
+  dctx.clearRect(0,0,W,H);
+  drugAnim+=0.03;
+
+  // Phases
+  const interfaceX = W*0.35;
+  const lipidX = W*0.65;
+
+  // Ethanol zone
+  dctx.fillStyle='rgba(100,116,139,0.1)';
+  dctx.fillRect(0,0,interfaceX,H);
+  dctx.fillStyle='rgba(100,116,139,0.5)'; dctx.font='11px Orbitron'; dctx.textAlign='center';
+  dctx.fillText('ETHANOL', interfaceX/2, 24);
+  dctx.fillStyle='rgba(100,116,139,0.3)'; dctx.font='9px Exo 2';
+  dctx.fillText('H-bonds with –OH', interfaceX/2, 38);
+
+  // Interface zone
+  dctx.fillStyle='rgba(255,215,0,0.05)';
+  dctx.fillRect(interfaceX,0,lipidX-interfaceX,H);
+  dctx.beginPath(); dctx.moveTo(interfaceX,0); dctx.lineTo(interfaceX,H);
+  dctx.strokeStyle='rgba(255,215,0,0.4)'; dctx.lineWidth=2; dctx.setLineDash([5,5]);
+  dctx.stroke(); dctx.setLineDash([]);
+  dctx.fillStyle='rgba(255,215,0,0.5)'; dctx.font='10px Orbitron'; dctx.textAlign='center';
+  dctx.fillText('INTERFACE', (interfaceX+lipidX)/2, 24);
+  dctx.fillStyle='rgba(255,215,0,0.3)'; dctx.font='9px Exo 2';
+  dctx.fillText('Transition zone', (interfaceX+lipidX)/2, 38);
+
+  // Lipid zone
+  dctx.fillStyle='rgba(0,255,231,0.06)';
+  dctx.fillRect(lipidX,0,W-lipidX,H);
+  dctx.beginPath(); dctx.moveTo(lipidX,0); dctx.lineTo(lipidX,H);
+  dctx.strokeStyle='rgba(0,255,231,0.3)'; dctx.lineWidth=2; dctx.setLineDash([5,5]);
+  dctx.stroke(); dctx.setLineDash([]);
+  // Lipid chains
+  for(let i=0;i<8;i++){
+    const lx=lipidX+30+i*((W-lipidX-30)/8);
+    dctx.strokeStyle='rgba(0,255,231,0.2)'; dctx.lineWidth=1.5; dctx.setLineDash([]);
+    dctx.beginPath(); dctx.moveTo(lx,50); dctx.lineTo(lx+Math.sin(drugAnim*0.5+i)*5,H-40);
+    dctx.stroke();
+  }
+  dctx.fillStyle='rgba(0,255,231,0.5)'; dctx.font='11px Orbitron'; dctx.textAlign='center';
+  dctx.fillText('LIPID MELT', lipidX+(W-lipidX)/2, 24);
+  dctx.fillStyle='rgba(0,255,231,0.3)'; dctx.font='9px Exo 2';
+  dctx.fillText('Hydrophobic environment', lipidX+(W-lipidX)/2, 38);
+
+  // Drug target positions
+  const targets = {
+    ethanol: [interfaceX*0.4, H/2],
+    interface: [(interfaceX+lipidX)/2, H/2],
+    partition: [lipidX+50, H/2],
+    lipid: [lipidX+(W-lipidX)*0.5, H/2],
+    ethanol_escape: [W+100, H/2]
+  };
+
+  const [tx,ty] = targets[drugAnimState] || targets.ethanol;
+
+  // Move drug particles
+  drugParticles.forEach(p=>{
+    const speed=0.04;
+    p.x += (tx-p.x)*speed + (Math.random()-0.5)*2;
+    p.y += (ty-p.y)*speed + (Math.random()-0.5)*2;
+    p.y = Math.max(50, Math.min(H-20, p.y));
+    // Draw drug
+    dctx.beginPath(); dctx.arc(p.x,p.y,9,0,Math.PI*2);
+    const dg=dctx.createRadialGradient(p.x,p.y,0,p.x,p.y,9);
+    dg.addColorStop(0,'rgba(255,215,0,0.95)');
+    dg.addColorStop(1,'rgba(255,215,0,0.1)');
+    dctx.fillStyle=dg; dctx.fill();
+    dctx.fillStyle='rgba(255,215,0,0.7)'; dctx.font='7px Exo 2'; dctx.textAlign='center';
+    dctx.fillText('RSV',p.x,p.y+3);
+  });
+
+  // Partition arrow when partitioning
+  if(drugAnimState==='partition'||drugAnimState==='lipid'){
+    dctx.beginPath();
+    dctx.moveTo(interfaceX+10,H/2); dctx.lineTo(lipidX-10,H/2);
+    dctx.strokeStyle='rgba(0,255,231,0.5)'; dctx.lineWidth=2;
+    dctx.setLineDash([]); dctx.stroke();
+    dctx.fillStyle='rgba(0,255,231,0.7)'; dctx.font='10px Orbitron'; dctx.textAlign='center';
+    dctx.fillText('ΔGpartition < 0', (interfaceX+lipidX)/2, H/2-12);
+    dctx.fillText('log P = 3.1 → lipid preferred', (interfaceX+lipidX)/2, H/2+24);
+  }
+
+  // Ethanol escape arrows
+  if(drugAnimState==='ethanol_escape'){
+    for(let i=0;i<5;i++){
+      const ex=20+i*30, ey=H/2+Math.sin(drugAnim*2+i)*20;
+      dctx.beginPath(); dctx.moveTo(ex,ey); dctx.lineTo(ex,ey-40);
+      dctx.strokeStyle='rgba(100,116,139,0.4)'; dctx.lineWidth=1.5; dctx.stroke();
+      dctx.beginPath(); dctx.arc(ex,ey-45,5,0,Math.PI*2);
+      dctx.fillStyle='rgba(100,116,139,0.5)'; dctx.fill();
+    }
+    dctx.fillStyle='rgba(100,116,139,0.6)'; dctx.font='10px Exo 2'; dctx.textAlign='center';
+    dctx.fillText('Ethanol diffuses away → drug stays in lipid', interfaceX/2, H-10);
+  }
+
+  requestAnimationFrame(drawDrugPartition);
+}
+drawDrugPartition();
+
+// ═══════════════════════════════════════
+// SURFACTANT CANVAS
+// ═══════════════════════════════════════
+const surfCanvas = document.getElementById('surfCanvas');
+resizeCanvas(surfCanvas);
+const sctx = surfCanvas.getContext('2d');
+let surfState='bare', surfAnim=0;
+
+function setSurfState(s){ surfState=s; }
+
+function drawSurf(){
+  const W=surfCanvas.width, H=surfCanvas.height;
+  sctx.clearRect(0,0,W,H);
+  surfAnim+=0.025;
+
+  const cx=W/2, cy=H/2, dropR=70;
+
+  // Water background
+  sctx.fillStyle='rgba(0,30,60,0.3)'; sctx.fillRect(0,0,W,H);
+
+  let numSurfs=0, numPolox=0;
+  if(surfState==='bare') { numSurfs=0; numPolox=0; }
+  else if(surfState==='tween') { numSurfs=16; numPolox=0; }
+  else if(surfState==='poloxamer') { numSurfs=8; numPolox=8; }
+  else if(surfState==='full'||surfState==='collision') { numSurfs=16; numPolox=8; }
+
+  // Droplet
+  const dropGrad=sctx.createRadialGradient(cx,cy,0,cx,cy,dropR);
+  dropGrad.addColorStop(0,'rgba(0,255,231,0.2)');
+  dropGrad.addColorStop(0.7,'rgba(0,255,231,0.08)');
+  dropGrad.addColorStop(1,'rgba(0,255,231,0.02)');
+  sctx.beginPath(); sctx.arc(cx,cy,dropR,0,Math.PI*2);
+  sctx.fillStyle=dropGrad; sctx.fill();
+  sctx.strokeStyle='rgba(0,255,231,0.4)'; sctx.lineWidth=2; sctx.stroke();
+
+  // Drug inside
+  for(let i=0;i<4;i++){
+    const a=(i/4)*Math.PI*2+surfAnim*0.2;
+    const dx=cx+Math.cos(a)*28, dy=cy+Math.sin(a)*28;
+    sctx.beginPath(); sctx.arc(dx,dy,7,0,Math.PI*2);
+    sctx.fillStyle='rgba(255,215,0,0.7)'; sctx.fill();
+  }
+
+  // Tween 80 molecules
+  for(let i=0;i<numSurfs;i++){
+    const a=(i/numSurfs)*Math.PI*2+surfAnim*0.05;
+    const tailX=cx+Math.cos(a)*(dropR-3), tailY=cy+Math.sin(a)*(dropR-3);
+    const headX=cx+Math.cos(a)*(dropR+16), headY=cy+Math.sin(a)*(dropR+16);
+    sctx.beginPath(); sctx.moveTo(tailX,tailY); sctx.lineTo(headX,headY);
+    sctx.strokeStyle='rgba(0,255,136,0.7)'; sctx.lineWidth=2.5; sctx.stroke();
+    sctx.beginPath(); sctx.arc(headX,headY,5,0,Math.PI*2);
+    sctx.fillStyle='rgba(0,255,136,0.6)'; sctx.fill();
+  }
+
+  // Poloxamer brush
+  for(let i=0;i<numPolox;i++){
+    const a=(i/numPolox)*Math.PI*2+Math.PI/(numPolox)+surfAnim*0.03;
+    for(let j=0;j<6;j++){
+      const br=dropR+22+j*9;
+      const ba=a+(j-2.5)*0.18;
+      const bx=cx+Math.cos(ba)*br, by=cy+Math.sin(ba)*br;
+      sctx.beginPath(); sctx.arc(bx,by,4-j*0.3,0,Math.PI*2);
+      sctx.fillStyle=`rgba(180,79,255,${0.7-j*0.1})`; sctx.fill();
+      if(j>0){
+        const pb=dropR+22+(j-1)*9, pba=a+(j-1-2.5)*0.18;
+        const px=cx+Math.cos(pba)*pb, py=cy+Math.sin(pba)*pb;
+        sctx.beginPath(); sctx.moveTo(px,py); sctx.lineTo(bx,by);
+        sctx.strokeStyle='rgba(180,79,255,0.4)'; sctx.lineWidth=1.5; sctx.stroke();
+      }
+    }
+  }
+
+  // Second droplet (collision test)
+  if(surfState==='collision'){
+    const cx2=cx+180+Math.sin(surfAnim*0.5)*30;
+    sctx.beginPath(); sctx.arc(cx2,cy,dropR,0,Math.PI*2);
+    sctx.fillStyle='rgba(180,79,255,0.1)'; sctx.fill();
+    sctx.strokeStyle='rgba(180,79,255,0.4)'; sctx.lineWidth=2; sctx.stroke();
+    // Repulsion indicator
+    const dist=Math.abs(cx2-cx);
+    if(dist<dropR*2+80){
+      sctx.fillStyle='rgba(0,255,136,0.6)'; sctx.font='11px Orbitron'; sctx.textAlign='center';
+      sctx.fillText('⟵ STERIC REPULSION ⟶', (cx+cx2)/2, cy-dropR-20);
+    }
+    // Poloxamer on second droplet
+    for(let i=0;i<8;i++){
+      const a=(i/8)*Math.PI*2+surfAnim*0.03;
+      for(let j=0;j<6;j++){
+        const br=dropR+22+j*9;
+        const ba=a+(j-2.5)*0.18;
+        const bx=cx2+Math.cos(ba)*br, by=cy+Math.sin(ba)*br;
+        sctx.beginPath(); sctx.arc(bx,by,4-j*0.3,0,Math.PI*2);
+        sctx.fillStyle=`rgba(180,79,255,${0.7-j*0.1})`; sctx.fill();
+      }
+    }
+  }
+
+  // Labels
+  const stateLabels={
+    bare:'Bare lipid droplet — high surface energy — unstable — immediate coalescence',
+    tween:'Tween 80 adsorbed — γ reduced to <1 mN/m — kinetically stable — fast adsorption',
+    poloxamer:'Poloxamer 188 brush layer — steric repulsion — long-term stability — de Gennes theory',
+    full:'Full stabilization: Tween 80 (primary) + Poloxamer 188 (secondary) — optimal SLN stability',
+    collision:'Steric repulsion test: Two approaching SLNs — PEO brush layers overlap → repulsion → no coalescence'
+  };
+  sctx.fillStyle='rgba(224,240,255,0.55)'; sctx.font='11px Exo 2'; sctx.textAlign='center';
+  sctx.fillText(stateLabels[surfState]||'', W/2, H-14);
+
+  requestAnimationFrame(drawSurf);
+}
+drawSurf();
+
+// ═══════════════════════════════════════
+// SONICATION CANVAS
+// ═══════════════════════════════════════
+const sonicCanvas = document.getElementById('sonicCanvas');
+resizeCanvas(sonicCanvas);
+const soCtx = sonicCanvas.getContext('2d');
+let sonicState='off', sonicAnim=0;
+let bubbles=[], nanoDroplets=[];
+
+function setSonicState(s){ sonicState=s; bubbles=[]; nanoDroplets=[]; }
+
+function drawSonic(){
+  const W=sonicCanvas.width, H=sonicCanvas.height;
+  soCtx.clearRect(0,0,W,H);
+  sonicAnim+=0.04;
+
+  // Background liquid
+  soCtx.fillStyle='rgba(0,20,40,0.5)'; soCtx.fillRect(0,0,W,H);
+
+  // Probe
+  soCtx.fillStyle='rgba(100,116,139,0.8)';
+  soCtx.fillRect(W/2-12,0,24,60);
+  soCtx.fillStyle='rgba(100,116,139,0.5)';
+  soCtx.fillRect(W/2-6,55,12,30);
+  soCtx.fillStyle='rgba(255,215,0,0.7)'; soCtx.font='9px Orbitron'; soCtx.textAlign='center';
+  soCtx.fillText('PROBE',W/2,20);
+  soCtx.fillStyle='rgba(255,215,0,0.5)'; soCtx.font='8px Exo 2';
+  soCtx.fillText('20-40 kHz',W/2,32);
+
+  if(sonicState==='off'){
+    soCtx.fillStyle='rgba(100,116,139,0.4)'; soCtx.font='14px Orbitron'; soCtx.textAlign='center';
+    soCtx.fillText('PROBE OFF — No acoustic field', W/2, H/2);
+    soCtx.font='11px Exo 2'; soCtx.fillStyle='rgba(100,116,139,0.3)';
+    soCtx.fillText('Click buttons above to activate sonication stages', W/2, H/2+24);
+  }
+
+  if(sonicState==='waves'||sonicState==='bubbles'||sonicState==='collapse'||sonicState==='nano'||sonicState==='pulse'){
+    // Acoustic waves
+    const isOn = sonicState!=='off';
+    const waveFreq = sonicState==='pulse' ? (Math.sin(sonicAnim*1.5)>0 ? 1 : 0) : 1;
+    if(waveFreq>0){
+      for(let w=0;w<8;w++){
+        const wr=(sonicAnim*80+w*40)%300;
+        soCtx.beginPath(); soCtx.arc(W/2,85,wr,0,Math.PI*2);
+        soCtx.strokeStyle=`rgba(255,215,0,${0.3*(1-wr/300)})`; soCtx.lineWidth=1; soCtx.stroke();
+      }
+    }
+  }
+
+  // Cavitation bubbles
+  if(sonicState==='bubbles'||sonicState==='collapse'){
+    if(Math.random()<0.1 && bubbles.length<30){
+      bubbles.push({x:100+Math.random()*(W-200),y:H-50,r:0,maxR:8+Math.random()*12,growing:true,alpha:1});
+    }
+    bubbles=bubbles.filter(b=>b.alpha>0.05);
+    bubbles.forEach(b=>{
+      if(b.growing){ b.r+=0.8; if(b.r>=b.maxR)b.growing=false; }
+      else{ b.r-=2; b.alpha-=0.05; }
+      soCtx.beginPath(); soCtx.arc(b.x,b.y-=(0.5),b.r,0,Math.PI*2);
+      soCtx.strokeStyle=`rgba(0,255,231,${b.alpha})`; soCtx.lineWidth=1.5; soCtx.stroke();
+      soCtx.fillStyle=`rgba(0,255,231,${b.alpha*0.1})`; soCtx.fill();
+      // Collapse flash
+      if(!b.growing && b.r<3 && b.alpha>0.3){
+        soCtx.beginPath(); soCtx.arc(b.x,b.y,20,0,Math.PI*2);
+        soCtx.fillStyle=`rgba(255,215,0,${b.alpha*0.4})`; soCtx.fill();
+      }
+    });
+    soCtx.fillStyle='rgba(0,255,231,0.5)'; soCtx.font='11px Orbitron'; soCtx.textAlign='center';
+    soCtx.fillText('ACOUSTIC CAVITATION — Bubble nucleation in rarefaction zones', W/2, H-16);
+  }
+
+  // Large → small droplets
+  if(sonicState==='collapse'||sonicState==='nano'){
+    const cx=W/2, cy=H*0.6;
+    if(sonicState==='collapse'){
+      // Large droplet being torn apart
+      soCtx.beginPath(); soCtx.arc(cx,cy,40+Math.sin(sonicAnim*5)*5,0,Math.PI*2);
+      soCtx.fillStyle='rgba(0,255,231,0.1)'; soCtx.fill();
+      soCtx.strokeStyle='rgba(0,255,231,0.5)'; soCtx.lineWidth=2; soCtx.stroke();
+      // Tear forces
+      for(let i=0;i<8;i++){
+        const a=(i/8)*Math.PI*2;
+        const fx=cx+Math.cos(a)*50, fy=cy+Math.sin(a)*50;
+        const fx2=cx+Math.cos(a)*70, fy2=cy+Math.sin(a)*70;
+        soCtx.beginPath(); soCtx.moveTo(fx,fy); soCtx.lineTo(fx2,fy2);
+        soCtx.strokeStyle='rgba(255,107,53,0.6)'; soCtx.lineWidth=2; soCtx.stroke();
+      }
+      soCtx.fillStyle='rgba(255,215,0,0.7)'; soCtx.font='11px Orbitron'; soCtx.textAlign='center';
+      soCtx.fillText('Micro-jets tear droplet into nanodrops', W/2, H-16);
+    }
+    if(sonicState==='nano'){
+      // Multiple nanoparticles
+      for(let i=0;i<20;i++){
+        const a=(i/20)*Math.PI*2+sonicAnim*0.1;
+        const r=100+30*Math.sin(i*2.3);
+        const nx=W/2+Math.cos(a)*r, ny=H*0.5+Math.sin(a)*r*0.6;
+        soCtx.beginPath(); soCtx.arc(nx,ny,8+Math.sin(sonicAnim+i)*2,0,Math.PI*2);
+        const ng=soCtx.createRadialGradient(nx,ny,0,nx,ny,10);
+        ng.addColorStop(0,'rgba(0,255,231,0.4)');
+        ng.addColorStop(1,'rgba(0,255,231,0.05)');
+        soCtx.fillStyle=ng; soCtx.fill();
+        soCtx.strokeStyle='rgba(0,255,231,0.5)'; soCtx.lineWidth=1; soCtx.stroke();
+      }
+      soCtx.fillStyle='rgba(0,255,136,0.7)'; soCtx.font='12px Orbitron'; soCtx.textAlign='center';
+      soCtx.fillText('✓ NANOPARTICLES FORMED — 100–300 nm', W/2, H*0.5);
+      soCtx.fillStyle='rgba(0,255,136,0.4)'; soCtx.font='10px Exo 2';
+      soCtx.fillText('Now proceed to ice bath cooling for SLN formation', W/2, H-16);
+    }
+  }
+
+  // Pulse mode
+  if(sonicState==='pulse'){
+    const isActive=Math.sin(sonicAnim*1.5)>0;
+    const cycleT = sonicAnim*1.5 % (Math.PI*2);
+    const onFrac = 5/(5+3);
+    soCtx.fillStyle=isActive?'rgba(0,255,231,0.7)':'rgba(255,51,102,0.6)';
+    soCtx.font='14px Orbitron'; soCtx.textAlign='center';
+    soCtx.fillText(isActive?'⚡ PULSE ON (5s)':'⏸ PULSE OFF (3s)', W/2, H*0.45);
+    soCtx.fillStyle='rgba(224,240,255,0.4)'; soCtx.font='10px Exo 2';
+    soCtx.fillText('ON prevents: trans→cis isomerization, oxidation, chain scission', W/2, H*0.45+20);
+    soCtx.fillText('OFF allows: heat dissipation, bulk temp maintains ~35°C', W/2, H*0.45+36);
+    // Temp gauge
+    const temp = isActive ? 40+Math.random()*5 : 33+Math.random()*3;
+    soCtx.fillStyle='rgba(255,107,53,0.7)'; soCtx.font='11px Orbitron';
+    soCtx.fillText(`Bulk Temp: ~${temp.toFixed(1)}°C`, W/2, H-16);
+  }
+
+  requestAnimationFrame(drawSonic);
+}
+drawSonic();
+
+// ═══════════════════════════════════════
+// CRYSTALLIZATION CANVAS
+// ═══════════════════════════════════════
+const crystalCanvas = document.getElementById('crystalCanvas');
+resizeCanvas(crystalCanvas);
+const crCtx = crystalCanvas.getContext('2d');
+let crystalState='hot', crystalAnim=0;
+let crystProgress=0;
+
+function setCrystalState(s){ crystalState=s; crystProgress=0; }
+
+function drawCrystal(){
+  const W=crystalCanvas.width, H=crystalCanvas.height;
+  crCtx.clearRect(0,0,W,H);
+  crystalAnim+=0.03;
+
+  if(crystalState==='slow_vs_fast'){
+    drawSlowVsFast(crCtx,W,H,crystalAnim);
+    requestAnimationFrame(drawCrystal);
+    return;
+  }
+
+  const stageProgress = Math.min(crystProgress+=0.005, 1);
+
+  // Single droplet visualization
+  const cx=W/2, cy=H/2, r=90;
+
+  // Background
+  const bgCol = crystalState==='hot'?'rgba(255,107,53,0.05)':'rgba(0,100,200,0.05)';
+  crCtx.fillStyle=bgCol; crCtx.fillRect(0,0,W,H);
+
+  // Droplet border
+  crCtx.beginPath(); crCtx.arc(cx,cy,r,0,Math.PI*2);
+  const bcolor = crystalState==='hot'?'rgba(255,107,53,0.4)':'rgba(0,255,231,0.4)';
+  crCtx.strokeStyle=bcolor; crCtx.lineWidth=2.5; crCtx.stroke();
+  crCtx.fillStyle=crystalState==='hot'?'rgba(255,107,53,0.08)':'rgba(0,255,231,0.05)';
+  crCtx.fill();
+
+  if(crystalState==='hot'){
+    // Random disordered chains
+    for(let i=0;i<10;i++){
+      const a=(i/10)*Math.PI*2+crystalAnim*0.3;
+      const x1=cx+Math.cos(a)*20, y1=cy+Math.sin(a)*20;
+      const x2=cx+Math.cos(a+0.5+Math.sin(crystalAnim+i))*60;
+      const y2=cy+Math.sin(a+0.5+Math.cos(crystalAnim*0.7+i))*60;
+      crCtx.beginPath(); crCtx.moveTo(x1,y1); crCtx.lineTo(x2,y2);
+      crCtx.strokeStyle='rgba(255,107,53,0.4)'; crCtx.lineWidth=2; crCtx.stroke();
+    }
+    // Drug freely moving
+    for(let i=0;i<5;i++){
+      const a=(i/5)*Math.PI*2+crystalAnim*(0.5+i*0.1);
+      const dr=40+Math.sin(crystalAnim*2+i)*20;
+      crCtx.beginPath(); crCtx.arc(cx+Math.cos(a)*dr,cy+Math.sin(a)*dr,7,0,Math.PI*2);
+      crCtx.fillStyle='rgba(255,215,0,0.8)'; crCtx.fill();
+    }
+    crCtx.fillStyle='rgba(255,107,53,0.7)'; crCtx.font='12px Orbitron'; crCtx.textAlign='center';
+    crCtx.fillText('HOT DROPLET — Liquid lipid phase', cx, H-40);
+    crCtx.fillStyle='rgba(224,240,255,0.4)'; crCtx.font='10px Exo 2';
+    crCtx.fillText('Resveratrol freely dissolved in molten lipid', cx, H-24);
+  }
+
+  if(crystalState==='nucleate'){
+    // Nucleus forming
+    const nucR=15+Math.sin(crystalAnim)*3;
+    crCtx.beginPath(); crCtx.arc(cx,cy,nucR,0,Math.PI*2);
+    crCtx.fillStyle='rgba(0,255,231,0.3)'; crCtx.fill();
+    crCtx.strokeStyle='rgba(0,255,231,0.7)'; crCtx.lineWidth=2; crCtx.stroke();
+    crCtx.fillStyle='rgba(0,255,231,0.6)'; crCtx.font='8px Orbitron'; crCtx.textAlign='center';
+    crCtx.fillText('nucleus', cx, cy+4);
+    // Chains starting to align near nucleus
+    for(let i=0;i<8;i++){
+      const a=(i/8)*Math.PI*2;
+      const sx=cx+Math.cos(a)*nucR, sy=cy+Math.sin(a)*nucR;
+      const ex=cx+Math.cos(a)*60, ey=cy+Math.sin(a)*60;
+      crCtx.beginPath(); crCtx.moveTo(sx,sy); crCtx.lineTo(ex,ey);
+      crCtx.strokeStyle='rgba(0,255,231,0.25)'; crCtx.lineWidth=1.5; crCtx.stroke();
+    }
+    crCtx.fillStyle='rgba(0,255,231,0.6)'; crCtx.font='12px Orbitron'; crCtx.textAlign='center';
+    crCtx.fillText('NUCLEATION BEGINS (confined)', cx, H-40);
+    crCtx.fillStyle='rgba(224,240,255,0.4)'; crCtx.font='10px Exo 2';
+    crCtx.fillText('J (nucleation rate) rising as temperature drops', cx, H-24);
+  }
+
+  if(crystalState==='grow'){
+    // Growing crystal domains
+    for(let s=0;s<4;s++){
+      const sa=(s/4)*Math.PI*2+0.3;
+      const sr=20+s*12;
+      crCtx.beginPath();
+      for(let i=0;i<6;i++){
+        const pa=(i/6)*Math.PI*2;
+        const px=cx+Math.cos(pa+sa)*sr, py=cy+Math.sin(pa+sa)*sr;
+        i===0?crCtx.moveTo(px,py):crCtx.lineTo(px,py);
+      }
+      crCtx.closePath();
+      crCtx.fillStyle='rgba(0,255,231,0.08)'; crCtx.fill();
+      crCtx.strokeStyle='rgba(0,255,231,0.4)'; crCtx.lineWidth=1; crCtx.stroke();
+    }
+    // Ordered chains in crystal
+    for(let i=0;i<8;i++){
+      const ax=cx-30+i*8, ay1=cy-40, ay2=cy+40;
+      crCtx.beginPath(); crCtx.moveTo(ax,ay1); crCtx.lineTo(ax,ay2);
+      crCtx.strokeStyle='rgba(0,255,231,0.35)'; crCtx.lineWidth=1.5; crCtx.stroke();
+    }
+    // Oleic kinks between domains
+    crCtx.strokeStyle='rgba(255,107,53,0.5)'; crCtx.lineWidth=2;
+    crCtx.beginPath(); crCtx.moveTo(cx+35,cy-30); crCtx.lineTo(cx+35,cy-10);
+    crCtx.lineTo(cx+48,cy+5); crCtx.lineTo(cx+35,cy+20); crCtx.lineTo(cx+35,cy+40); crCtx.stroke();
+    crCtx.fillStyle='rgba(255,107,53,0.6)'; crCtx.font='9px Exo 2'; crCtx.textAlign='center';
+    crCtx.fillText('oleic defect',cx+55,cy);
+    crCtx.fillStyle='rgba(0,255,136,0.7)'; crCtx.font='12px Orbitron'; crCtx.textAlign='center';
+    crCtx.fillText('CRYSTAL GROWTH — Stearic acid ordering', cx, H-40);
+    crCtx.fillStyle='rgba(224,240,255,0.4)'; crCtx.font='10px Exo 2';
+    crCtx.fillText('Oleic acid creates permanent defects — rejecting from lattice', cx, H-24);
+  }
+
+  if(crystalState==='trap'){
+    // Crystal with defect zones
+    for(let i=0;i<12;i++){
+      const ax=cx-50+i*9, ay1=cy-55, ay2=cy+55;
+      const isDefect = i===4||i===8;
+      crCtx.beginPath(); crCtx.moveTo(ax,ay1);
+      if(isDefect){ crCtx.lineTo(ax+8,cy-10); crCtx.lineTo(ax+8,cy+10); }
+      crCtx.lineTo(ax,ay2);
+      crCtx.strokeStyle=isDefect?'rgba(255,107,53,0.5)':'rgba(0,255,231,0.35)';
+      crCtx.lineWidth=isDefect?2.5:1.5; crCtx.stroke();
+    }
+    // Drug molecules trapped at defect zones
+    [[cx-50+4*9+8,cy],[cx-50+8*9+8,cy]].forEach(([dx,dy])=>{
+      crCtx.beginPath(); crCtx.arc(dx,dy,10,0,Math.PI*2);
+      const dg=crCtx.createRadialGradient(dx,dy,0,dx,dy,10);
+      dg.addColorStop(0,'rgba(255,215,0,0.95)');
+      dg.addColorStop(1,'rgba(255,215,0,0.1)');
+      crCtx.fillStyle=dg; crCtx.fill();
+      crCtx.strokeStyle='rgba(255,215,0,0.5)'; crCtx.lineWidth=2; crCtx.stroke();
+      crCtx.fillStyle='rgba(255,215,0,0.8)'; crCtx.font='8px Exo 2'; crCtx.textAlign='center';
+      crCtx.fillText('RSV',dx,dy+3);
+      // Trap circle
+      crCtx.beginPath(); crCtx.arc(dx,dy,18,0,Math.PI*2);
+      crCtx.strokeStyle='rgba(255,215,0,0.3)'; crCtx.lineWidth=1.5; crCtx.setLineDash([2,3]);
+      crCtx.stroke(); crCtx.setLineDash([]);
+      crCtx.fillStyle='rgba(255,215,0,0.5)'; crCtx.font='8px Orbitron'; crCtx.textAlign='center';
+      crCtx.fillText('TRAPPED',dx,dy-24);
+    });
+    crCtx.fillStyle='rgba(255,215,0,0.7)'; crCtx.font='12px Orbitron'; crCtx.textAlign='center';
+    crCtx.fillText('DEFECT-MEDIATED KINETIC ENTRAPMENT', cx, H-40);
+    crCtx.fillStyle='rgba(224,240,255,0.4)'; crCtx.font='10px Exo 2';
+    crCtx.fillText('Drug physically trapped in disordered interstitial zones', cx, H-24);
+  }
+
+  if(crystalState==='sln'){
+    // Final solid SLN
+    for(let i=0;i<14;i++){
+      const ax=cx-55+i*8.5;
+      crCtx.beginPath(); crCtx.moveTo(ax,cy-55); crCtx.lineTo(ax+Math.sin(i*0.3)*3,cy+55);
+      crCtx.strokeStyle='rgba(0,255,231,0.4)'; crCtx.lineWidth=1.5; crCtx.stroke();
+    }
+    // Drug inside
+    [[cx-20,cy-15],[cx+15,cy+10],[cx-5,cy+25]].forEach(([dx,dy])=>{
+      crCtx.beginPath(); crCtx.arc(dx,dy,7,0,Math.PI*2);
+      crCtx.fillStyle='rgba(255,215,0,0.8)'; crCtx.fill();
+    });
+    // Surfactant shell
+    for(let i=0;i<16;i++){
+      const sa=(i/16)*Math.PI*2+crystalAnim*0.05;
+      const tx=cx+Math.cos(sa)*(r-3), ty=cy+Math.sin(sa)*(r-3);
+      const hx=cx+Math.cos(sa)*(r+14), hy=cy+Math.sin(sa)*(r+14);
+      crCtx.beginPath(); crCtx.moveTo(tx,ty); crCtx.lineTo(hx,hy);
+      crCtx.strokeStyle='rgba(0,255,136,0.5)'; crCtx.lineWidth=2; crCtx.stroke();
+      crCtx.beginPath(); crCtx.arc(hx,hy,4,0,Math.PI*2);
+      crCtx.fillStyle='rgba(0,255,136,0.5)'; crCtx.fill();
+    }
+    crCtx.shadowColor='rgba(0,255,136,0.5)'; crCtx.shadowBlur=20;
+    crCtx.strokeStyle='rgba(0,255,136,0.5)'; crCtx.lineWidth=2;
+    crCtx.beginPath(); crCtx.arc(cx,cy,r,0,Math.PI*2); crCtx.stroke();
+    crCtx.shadowBlur=0;
+    crCtx.fillStyle='rgba(0,255,136,0.8)'; crCtx.font='13px Orbitron'; crCtx.textAlign='center';
+    crCtx.fillText('✓ SOLID LIPID NANOPARTICLE — FORMED', cx, H-40);
+    crCtx.fillStyle='rgba(224,240,255,0.4)'; crCtx.font='10px Exo 2';
+    crCtx.fillText('Kinetically trapped, sterically stabilized, defect-rich solid matrix', cx, H-24);
+  }
+
+  requestAnimationFrame(drawCrystal);
+}
+
+function drawSlowVsFast(ctx, W, H, t){
+  const half=W/2;
+  // LEFT: SLOW COOLING
+  ctx.fillStyle='rgba(255,51,102,0.04)'; ctx.fillRect(0,0,half,H);
+  ctx.fillStyle='rgba(255,51,102,0.7)'; ctx.font='bold 11px Orbitron'; ctx.textAlign='center';
+  ctx.fillText('SLOW COOLING', half/2, 24);
+  ctx.fillStyle='rgba(255,51,102,0.4)'; ctx.font='9px Exo 2';
+  ctx.fillText('Few nuclei → large crystals → drug expelled', half/2, 38);
+  // Large ordered crystal
+  const lc={x:half/2,y:H/2};
+  for(let i=0;i<10;i++){
+    const ax=lc.x-45+i*10;
+    ctx.beginPath(); ctx.moveTo(ax,lc.y-70); ctx.lineTo(ax,lc.y+70);
+    ctx.strokeStyle='rgba(0,255,231,0.35)'; ctx.lineWidth=2; ctx.stroke();
+  }
+  // Expelled drug at surface
+  for(let i=0;i<5;i++){
+    const a=(i/5)*Math.PI*2;
+    ctx.beginPath(); ctx.arc(lc.x+Math.cos(a)*80,lc.y+Math.sin(a)*80,8,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,215,0,0.7)'; ctx.fill();
+    ctx.fillStyle='rgba(255,215,0,0.5)'; ctx.font='7px Exo 2'; ctx.textAlign='center';
+    ctx.fillText('expelled',lc.x+Math.cos(a)*80,lc.y+Math.sin(a)*80+3);
+  }
+  ctx.fillStyle='rgba(255,51,102,0.6)'; ctx.font='11px Exo 2'; ctx.textAlign='center';
+  ctx.fillText('Low EE% → High burst release → Poor controlled release', half/2, H-20);
+
+  // DIVIDER
+  ctx.beginPath(); ctx.moveTo(half,0); ctx.lineTo(half,H);
+  ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=2; ctx.stroke();
+
+  // RIGHT: FAST COOLING
+  ctx.fillStyle='rgba(0,255,136,0.04)'; ctx.fillRect(half,0,half,H);
+  ctx.fillStyle='rgba(0,255,136,0.7)'; ctx.font='bold 11px Orbitron'; ctx.textAlign='center';
+  ctx.fillText('RAPID COOLING (ICE BATH)', half+half/2, 24);
+  ctx.fillStyle='rgba(0,255,136,0.4)'; ctx.font='9px Exo 2';
+  ctx.fillText('Many nuclei → small domains → drug trapped', half+half/2, 38);
+  // Multiple small crystal domains with drug trapped
+  const nucs=[[0.3,0.35],[0.6,0.4],[0.45,0.65],[0.25,0.62],[0.65,0.62],[0.5,0.4]];
+  nucs.forEach(([fx,fy],idx)=>{
+    const nx=half+fx*half, ny=fy*H;
+    const nr=20;
+    ctx.beginPath(); ctx.arc(nx,ny,nr,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,255,231,0.08)'; ctx.fill();
+    ctx.strokeStyle='rgba(0,255,231,0.4)'; ctx.lineWidth=1.5; ctx.stroke();
+    // Drug between domains
+    if(idx<5){
+      const ndx=nx+30, ndy=ny;
+      ctx.beginPath(); ctx.arc(ndx,ndy,7,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,215,0,0.8)'; ctx.fill();
+      ctx.fillStyle='rgba(0,255,136,0.5)'; ctx.font='7px Exo 2'; ctx.textAlign='center';
+      ctx.fillText('trapped',ndx,ndy+3);
+    }
+  });
+  ctx.fillStyle='rgba(0,255,136,0.6)'; ctx.font='11px Exo 2'; ctx.textAlign='center';
+  ctx.fillText('High EE% → Low burst → Higuchi sustained release', half+half/2, H-20);
+}
+drawCrystal();
+
+// ═══════════════════════════════════════
+// DIALYSIS CANVAS
+// ═══════════════════════════════════════
+const dialysisCanvas = document.getElementById('dialysisCanvas');
+resizeCanvas(dialysisCanvas);
+const dlCtx = dialysisCanvas.getContext('2d');
+let dialState='start', dialAnim=0;
+let freeDrug=[], ethMols=[];
+
+function setDialysisState(s){
+  dialState=s;
+  freeDrug=[];
+  for(let i=0;i<15;i++) freeDrug.push({x:80+Math.random()*120,y:50+Math.random()*180,vx:1+Math.random(),vy:(Math.random()-0.5)*2,passed:false});
+  ethMols=[];
+  for(let i=0;i<10;i++) ethMols.push({x:80+Math.random()*120,y:50+Math.random()*180,vx:0.7+Math.random()*0.5,vy:(Math.random()-0.5)*1,passed:false});
+}
+setDialysisState('start');
+
+function drawDialysis(){
+  const W=dialysisCanvas.width, H=dialysisCanvas.height;
+  dlCtx.clearRect(0,0,W,H);
+  dialAnim+=0.03;
+
+  const memX=W*0.42;
+
+  // Inside bag
+  dlCtx.fillStyle='rgba(124,58,237,0.06)';
+  dlCtx.fillRect(0,0,memX,H);
+  dlCtx.fillStyle='rgba(180,79,255,0.5)'; dlCtx.font='bold 11px Orbitron'; dlCtx.textAlign='center';
+  dlCtx.fillText('INSIDE DIALYSIS BAG', memX/2, 24);
+  dlCtx.fillStyle='rgba(180,79,255,0.3)'; dlCtx.font='9px Exo 2';
+  dlCtx.fillText('(5 mL SLN dispersion)', memX/2, 38);
+
+  // Outside
+  dlCtx.fillStyle='rgba(0,255,136,0.03)';
+  dlCtx.fillRect(memX+20,0,W-memX-20,H);
+  dlCtx.fillStyle='rgba(0,255,136,0.5)'; dlCtx.font='bold 11px Orbitron'; dlCtx.textAlign='center';
+  dlCtx.fillText('DISTILLED WATER', memX+(W-memX)/2, 24);
+  dlCtx.fillStyle='rgba(0,255,136,0.3)'; dlCtx.font='9px Exo 2';
+  dlCtx.fillText('(100 mL, concentration = 0)', memX+(W-memX)/2, 38);
+
+  // Membrane
+  dlCtx.fillStyle='rgba(100,116,139,0.3)';
+  dlCtx.fillRect(memX,0,20,H);
+  dlCtx.fillStyle='rgba(100,116,139,0.7)'; dlCtx.font='8px Orbitron'; dlCtx.textAlign='center';
+  dlCtx.fillText('MEMBRANE',memX+10,H/2-4);
+  dlCtx.fillText('12-14 kDa',memX+10,H/2+8);
+  // Pores
+  for(let p=0;p<8;p++){
+    const py=55+p*((H-60)/8);
+    dlCtx.beginPath(); dlCtx.arc(memX+10,py,4,0,Math.PI*2);
+    dlCtx.fillStyle='rgba(5,8,16,0.9)'; dlCtx.fill();
+    dlCtx.strokeStyle='rgba(100,116,139,0.4)'; dlCtx.lineWidth=1; dlCtx.stroke();
+  }
+
+  // SLN particles (large - retained)
+  [[memX*0.25,H*0.4],[memX*0.5,H*0.6],[memX*0.15,H*0.7]].forEach(([sx,sy])=>{
+    dlCtx.beginPath(); dlCtx.arc(sx,sy,22,0,Math.PI*2);
+    dlCtx.fillStyle='rgba(0,255,231,0.08)'; dlCtx.fill();
+    dlCtx.strokeStyle='rgba(0,255,231,0.4)'; dlCtx.lineWidth=2; dlCtx.stroke();
+    dlCtx.fillStyle='rgba(0,255,231,0.5)'; dlCtx.font='8px Orbitron'; dlCtx.textAlign='center';
+    dlCtx.fillText('SLN',sx,sy-4); dlCtx.fillText('~200nm',sx,sy+6);
+    // X mark
+    dlCtx.fillStyle='rgba(255,51,102,0.6)'; dlCtx.font='bold 12px Exo 2';
+    dlCtx.fillText('✗',sx+18,sy-14);
+  });
+
+  // Free drug molecules moving
+  if(dialState==='diffuse'||dialState==='complete'){
+    freeDrug.forEach(d=>{
+      if(d.x<memX-5){ d.x+=dialState==='complete'?2:0.8; }
+      else if(!d.passed){ d.x=memX+25; d.passed=true; }
+      else { d.x+=1; }
+      d.y+=d.vy;
+      if(d.y<50||d.y>H-20) d.vy*=-1;
+      if(d.x>W) return;
+      const col = d.x>memX+20 ? 'rgba(255,51,102,0.5)' : 'rgba(255,215,0,0.8)';
+      dlCtx.beginPath(); dlCtx.arc(d.x,d.y,5,0,Math.PI*2);
+      dlCtx.fillStyle=col; dlCtx.fill();
+      dlCtx.fillStyle=col; dlCtx.font='7px Exo 2'; dlCtx.textAlign='center';
+      dlCtx.fillText('RSV',d.x,d.y+3);
+    });
+    // Concentration gradient arrow
+    dlCtx.beginPath();
+    dlCtx.moveTo(30,H-20); dlCtx.lineTo(W-30,H-20);
+    dlCtx.strokeStyle='rgba(255,215,0,0.3)'; dlCtx.lineWidth=1.5;
+    dlCtx.setLineDash([4,4]); dlCtx.stroke(); dlCtx.setLineDash([]);
+    dlCtx.fillStyle='rgba(255,215,0,0.4)'; dlCtx.font='9px Orbitron'; dlCtx.textAlign='center';
+    dlCtx.fillText('Fick\'s Law: J = -D(dC/dx) → High→Low concentration',W/2,H-6);
+  }
+
+  requestAnimationFrame(drawDialysis);
+}
+drawDialysis();
+
+// ═══════════════════════════════════════
+// LYOPHILIZATION CANVAS
+// ═══════════════════════════════════════
+const lyoCanvas = document.getElementById('lyoCanvas');
+resizeCanvas(lyoCanvas);
+const lyCtx = lyoCanvas.getContext('2d');
+let lyoState='liquid', lyoAnim=0;
+
+function setLyoState(s){ lyoState=s; }
+
+function drawLyo(){
+  const W=lyoCanvas.width, H=lyoCanvas.height;
+  lyCtx.clearRect(0,0,W,H);
+  lyoAnim+=0.03;
+
+  const stages={
+    liquid:{color:'#00ffe7',label:'Liquid SLN dispersion — particles Brownian motion',sub:'Water molecules surround each nanoparticle'},
+    freeze:{color:'#5b9bd5',label:'FREEZING –20°C — Ice crystal formation',sub:'Mannitol concentrates → glassy protective matrix around SLNs'},
+    primary:{color:'#b44fff',label:'PRIMARY DRYING — Ice sublimes (–50°C, vacuum)',sub:'Ice → vapor without liquid phase | Sublimation | Porous cake forms'},
+    secondary:{color:'#f59e0b',label:'SECONDARY DRYING — Bound water removal',sub:'Residual moisture &lt;3% | Chemical stability preserved'},
+    powder:{color:'#00ff88',label:'✓ FREE-FLOWING POWDER — 130 mg yield',sub:'SLNs embedded in mannitol matrix | Ready for release kinetics'}
+  };
+  const s=stages[lyoState]||stages.liquid;
+
+  // Background
+  lyCtx.fillStyle=`rgba(${lyoState==='liquid'?'0,255,231':lyoState==='freeze'?'91,155,213':lyoState==='primary'?'180,79,255':lyoState==='secondary'?'245,158,11':'0,255,136'},0.04)`;
+  lyCtx.fillRect(0,0,W,H);
+
+  const cx=W/2, cy=H/2;
+
+  if(lyoState==='liquid'){
+    // Brownian particles
+    for(let i=0;i<12;i++){
+      const a=(i/12)*Math.PI*2;
+      const r=50+Math.sin(lyoAnim*0.7+i*0.9)*30;
+      const px=cx+Math.cos(a+lyoAnim*0.2)*r, py=cy+Math.sin(a+lyoAnim*0.15)*r;
+      lyCtx.beginPath(); lyCtx.arc(px,py,14,0,Math.PI*2);
+      lyCtx.fillStyle='rgba(0,255,231,0.1)'; lyCtx.fill();
+      lyCtx.strokeStyle='rgba(0,255,231,0.4)'; lyCtx.lineWidth=1.5; lyCtx.stroke();
+      lyCtx.fillStyle='rgba(255,215,0,0.6)'; lyCtx.font='8px Exo 2'; lyCtx.textAlign='center';
+      lyCtx.fillText('SLN',px,py+3);
+    }
+    // Water molecules
+    for(let i=0;i<20;i++){
+      const wx=30+Math.random()*(W-60), wy=40+Math.random()*(H-80);
+      lyCtx.beginPath(); lyCtx.arc(wx+Math.sin(lyoAnim*3+i)*5,wy+Math.cos(lyoAnim*2+i)*5,2,0,Math.PI*2);
+      lyCtx.fillStyle='rgba(100,180,255,0.3)'; lyCtx.fill();
+    }
+  }
+
+  if(lyoState==='freeze'){
+    // Ice crystal lattice
+    for(let i=0;i<6;i++){
+      for(let j=0;j<4;j++){
+        const ix=80+i*90, iy=60+j*50;
+        // Snowflake
+        for(let arm=0;arm<6;arm++){
+          const aa=(arm/6)*Math.PI*2;
+          lyCtx.beginPath(); lyCtx.moveTo(ix,iy);
+          lyCtx.lineTo(ix+Math.cos(aa)*20,iy+Math.sin(aa)*20);
+          lyCtx.strokeStyle='rgba(91,155,213,0.3)'; lyCtx.lineWidth=1; lyCtx.stroke();
+        }
+      }
+    }
+    // Particles in mannitol glass
+    [[cx-100,cy-30],[cx,cy+20],[cx+90,cy-20],[cx-60,cy+50],[cx+40,cy+50]].forEach(([px,py])=>{
+      lyCtx.beginPath(); lyCtx.arc(px,py,15,0,Math.PI*2);
+      lyCtx.fillStyle='rgba(0,255,231,0.12)'; lyCtx.fill();
+      lyCtx.strokeStyle='rgba(0,255,231,0.5)'; lyCtx.lineWidth=2; lyCtx.stroke();
+      lyCtx.strokeStyle='rgba(180,79,255,0.3)'; lyCtx.lineWidth=1;
+      lyCtx.setLineDash([2,2]);
+      lyCtx.beginPath(); lyCtx.arc(px,py,25,0,Math.PI*2); lyCtx.stroke();
+      lyCtx.setLineDash([]);
+      lyCtx.fillStyle='rgba(180,79,255,0.4)'; lyCtx.font='7px Exo 2'; lyCtx.textAlign='center';
+      lyCtx.fillText('mannitol',px,py+35);
+    });
+  }
+
+  if(lyoState==='primary'){
+    // Upward arrows (sublimation)
+    for(let i=0;i<8;i++){
+      const ax=60+i*((W-120)/8);
+      const ay=H/2+30+(Math.sin(lyoAnim*2+i)*20);
+      lyCtx.beginPath(); lyCtx.moveTo(ax,ay); lyCtx.lineTo(ax,ay-60);
+      lyCtx.strokeStyle='rgba(180,79,255,0.4)'; lyCtx.lineWidth=2; lyCtx.stroke();
+      lyCtx.beginPath(); lyCtx.moveTo(ax-5,ay-55); lyCtx.lineTo(ax,ay-70); lyCtx.lineTo(ax+5,ay-55);
+      lyCtx.strokeStyle='rgba(180,79,255,0.6)'; lyCtx.stroke();
+      lyCtx.fillStyle='rgba(180,79,255,0.4)'; lyCtx.font='8px Exo 2'; lyCtx.textAlign='center';
+      lyCtx.fillText('H₂O↑',ax,ay+12);
+    }
+    lyCtx.fillStyle='rgba(180,79,255,0.6)'; lyCtx.font='11px Orbitron'; lyCtx.textAlign='center';
+    lyCtx.fillText('ICE → VAPOR (sublimation) — no liquid phase',cx,H-16);
+  }
+
+  if(lyoState==='secondary'||lyoState==='powder'){
+    // Powder representation
+    const rows=3, cols=6;
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        const px=100+c*((W-200)/cols)+Math.sin(lyoAnim+r+c)*3;
+        const py=H*0.3+r*60;
+        lyCtx.beginPath(); lyCtx.arc(px,py,16,0,Math.PI*2);
+        lyCtx.fillStyle='rgba(0,255,231,0.1)'; lyCtx.fill();
+        lyCtx.strokeStyle=lyoState==='powder'?'rgba(0,255,136,0.5)':'rgba(245,158,11,0.4)';
+        lyCtx.lineWidth=2; lyCtx.stroke();
+        lyCtx.fillStyle='rgba(255,215,0,0.5)'; lyCtx.font='7px Exo 2'; lyCtx.textAlign='center';
+        lyCtx.fillText('SLN',px,py+3);
+      }
+    }
+    if(lyoState==='powder'){
+      // Yield indicator
+      lyCtx.fillStyle='rgba(255,51,102,0.7)'; lyCtx.font='14px Orbitron'; lyCtx.textAlign='center';
+      lyCtx.fillText('YIELD: 130 mg (target 300–500 mg)',cx,H-36);
+      lyCtx.fillStyle='rgba(255,107,53,0.5)'; lyCtx.font='10px Exo 2';
+      lyCtx.fillText('Optimization needed: mannitol %, drying cycle, cryoprotectant',cx,H-18);
+    }
+  }
+
+  // State label
+  lyCtx.fillStyle=s.color; lyCtx.font='bold 12px Orbitron'; lyCtx.textAlign='center';
+  lyCtx.fillText(s.label,cx,28);
+  lyCtx.fillStyle='rgba(224,240,255,0.4)'; lyCtx.font='10px Exo 2';
+  lyCtx.fillText(s.sub,cx,H-6);
+
+  requestAnimationFrame(drawLyo);
+}
+drawLyo();
+
+// Resize all canvases on window resize
+window.addEventListener('resize',()=>{
+  [heroCanvas,matCanvas,meltCanvas,oleicCanvas,drugCanvas,surfCanvas,sonicCanvas,crystalCanvas,dialysisCanvas,lyoCanvas].forEach(c=>resizeCanvas(c));
+});
+
+// Intersection observer for nav highlight
+const sections=['step-0','step-1','step-2','step-5','step-6','step-7','step-8','step-9'];
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const idx=sections.indexOf(e.target.id);
+      if(idx>=0){
+        document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
+      }
+    }
+  });
+},{threshold:0.3});
+sections.forEach(id=>{const el=document.getElementById(id);if(el)observer.observe(el);});
+</script>
+</body>
+</html>

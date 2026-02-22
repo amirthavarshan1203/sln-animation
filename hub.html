@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Nano Translation Lab — SLN Research Portal</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:ital,wght@0,300;0,400;0,600;0,700;1,300&display=swap');
+
+:root {
+  --bg: #03050f;
+  --c1: #00ffe7;
+  --c2: #ff6b35;
+  --c3: #ffd700;
+  --c4: #b44fff;
+  --c5: #00ff88;
+  --c6: #ff3366;
+  --border: rgba(0,255,231,0.15);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:#e0f0ff;
+  font-family:'Exo 2',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* PARTICLE CANVAS */
+#bgCanvas{
+  position:fixed;inset:0;
+  z-index:0;
+  pointer-events:none;
+}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;
+  padding:14px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(3,5,15,0.85);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+  z-index:100;
+}
+.lab-logo{
+  display:flex;align-items:center;gap:10px;
+}
+.logo-icon{
+  width:36px;height:36px;
+  border:2px solid var(--c1);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;
+  animation:logo-spin 8s linear infinite;
+  background:rgba(0,255,231,0.05);
+  flex-shrink:0;
+}
+@keyframes logo-spin{
+  0%{box-shadow:0 0 8px var(--c1),inset 0 0 8px rgba(0,255,231,0.1);}
+  50%{box-shadow:0 0 24px var(--c1),inset 0 0 16px rgba(0,255,231,0.2);}
+  100%{box-shadow:0 0 8px var(--c1),inset 0 0 8px rgba(0,255,231,0.1);}
+}
+.logo-text{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(9px,2vw,13px);
+  font-weight:900;
+  color:var(--c1);
+  letter-spacing:2px;
+  line-height:1.2;
+}
+.logo-sub{
+  font-family:'Exo 2',sans-serif;
+  font-size:9px;
+  color:rgba(0,255,231,0.4);
+  letter-spacing:3px;
+  text-transform:uppercase;
+}
+.nav-tag{
+  font-family:'Orbitron',monospace;
+  font-size:9px;
+  color:rgba(0,255,231,0.4);
+  letter-spacing:3px;
+  display:none;
+}
+@media(min-width:600px){.nav-tag{display:block;}}
+
+/* HERO */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;
+  padding:100px 20px 60px;
+  position:relative;z-index:1;
+}
+
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(90deg,rgba(0,255,231,0.08),rgba(180,79,255,0.08));
+  border:1px solid rgba(0,255,231,0.25);
+  color:var(--c1);
+  font-family:'Orbitron',monospace;
+  font-size:clamp(8px,2vw,10px);
+  letter-spacing:3px;
+  padding:8px 18px;
+  border-radius:2px;
+  margin-bottom:28px;
+  animation:eyebrow-glow 3s ease-in-out infinite;
+}
+@keyframes eyebrow-glow{
+  0%,100%{box-shadow:0 0 10px rgba(0,255,231,0.15);}
+  50%{box-shadow:0 0 30px rgba(0,255,231,0.4),0 0 60px rgba(180,79,255,0.2);}
+}
+.eyebrow-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--c1);
+  animation:dot-pulse 1.5s ease-in-out infinite;
+}
+@keyframes dot-pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.6);}}
+
+.hero-title{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(28px,8vw,80px);
+  font-weight:900;
+  line-height:1.0;
+  margin-bottom:8px;
+  background:linear-gradient(135deg,#00ffe7 0%,#b44fff 50%,#ff6b35 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  background-size:200% 200%;
+  animation:gradient-shift 4s ease infinite;
+}
+@keyframes gradient-shift{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+.hero-title-line2{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(14px,4vw,36px);
+  font-weight:400;
+  color:rgba(224,240,255,0.5);
+  margin-bottom:32px;
+  letter-spacing:4px;
+}
+
+/* Animated SLN molecule display */
+#heroMolCanvas{
+  width:100%;
+  max-width:600px;
+  height:200px;
+  margin:20px auto;
+}
+@media(min-width:600px){#heroMolCanvas{height:260px;}}
+
+.hero-desc{
+  font-size:clamp(13px,2vw,16px);
+  font-weight:300;
+  color:rgba(224,240,255,0.5);
+  max-width:600px;
+  line-height:1.8;
+  margin:16px auto 48px;
+}
+
+/* CARDS */
+.cards-section{
+  position:relative;z-index:1;
+  padding:20px 20px 80px;
+  max-width:1000px;
+  margin:0 auto;
+}
+.cards-label{
+  text-align:center;
+  font-family:'Orbitron',monospace;
+  font-size:10px;
+  letter-spacing:4px;
+  color:rgba(0,255,231,0.4);
+  margin-bottom:40px;
+  text-transform:uppercase;
+}
+
+.cards-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:24px;
+}
+@media(min-width:700px){
+  .cards-grid{grid-template-columns:1fr 1fr;}
+}
+
+.card{
+  position:relative;
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:20px;
+  padding:32px 28px;
+  overflow:hidden;
+  cursor:pointer;
+  text-decoration:none;
+  display:block;
+  transition:transform 0.4s cubic-bezier(0.23,1,0.32,1),
+             box-shadow 0.4s cubic-bezier(0.23,1,0.32,1),
+             border-color 0.4s;
+  animation:card-float 6s ease-in-out infinite;
+}
+.card:nth-child(2){animation-delay:3s;}
+@keyframes card-float{
+  0%,100%{transform:translateY(0px);}
+  50%{transform:translateY(-6px);}
+}
+.card:hover{
+  transform:translateY(-12px) scale(1.01) !important;
+  border-color:rgba(0,255,231,0.4);
+  box-shadow:0 30px 80px rgba(0,0,0,0.5),
+             0 0 40px rgba(0,255,231,0.1),
+             inset 0 1px 0 rgba(255,255,255,0.1);
+  animation:none;
+}
+.card:active{transform:scale(0.98) !important;}
+
+/* card animated gradient bg */
+.card::before{
+  content:'';
+  position:absolute;inset:0;
+  opacity:0;
+  transition:opacity 0.4s;
+  border-radius:20px;
+}
+.card1::before{background:radial-gradient(ellipse at 30% 20%,rgba(0,255,231,0.06),transparent 70%);}
+.card2::before{background:radial-gradient(ellipse at 70% 20%,rgba(180,79,255,0.06),transparent 70%);}
+.card:hover::before{opacity:1;}
+
+/* scanning top line */
+.card::after{
+  content:'';
+  position:absolute;top:0;left:-100%;right:0;height:2px;
+  transition:left 0.6s ease;
+}
+.card1::after{background:linear-gradient(90deg,transparent,var(--c1),transparent);}
+.card2::after{background:linear-gradient(90deg,transparent,var(--c4),transparent);}
+.card:hover::after{left:100%;}
+
+.card-num{
+  font-family:'Orbitron',monospace;
+  font-size:10px;letter-spacing:3px;
+  margin-bottom:18px;
+  display:flex;align-items:center;gap:10px;
+}
+.card-num-badge{
+  width:32px;height:32px;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:900;
+}
+
+/* mini canvas in card */
+.card-canvas-wrap{
+  width:100%;height:140px;
+  border-radius:10px;
+  overflow:hidden;
+  margin-bottom:20px;
+  background:#02040a;
+  border:1px solid rgba(255,255,255,0.05);
+  position:relative;
+}
+.card-canvas-wrap canvas{
+  display:block;width:100%;height:100%;
+}
+
+.card-title{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(14px,2.5vw,19px);
+  font-weight:900;
+  margin-bottom:10px;
+  line-height:1.2;
+}
+.card-desc{
+  font-size:clamp(12px,1.5vw,14px);
+  color:rgba(224,240,255,0.5);
+  line-height:1.7;
+  margin-bottom:20px;
+}
+.card-tags{
+  display:flex;flex-wrap:wrap;gap:6px;
+  margin-bottom:24px;
+}
+.tag{
+  font-family:'Orbitron',monospace;
+  font-size:8px;letter-spacing:1px;
+  padding:4px 10px;
+  border-radius:3px;
+  border:1px solid;
+}
+.card-cta{
+  display:flex;align-items:center;gap:10px;
+  font-family:'Orbitron',monospace;
+  font-size:11px;font-weight:700;
+  letter-spacing:2px;
+  padding:12px 20px;
+  border-radius:8px;
+  border:1px solid;
+  transition:all 0.3s;
+  width:100%;
+  justify-content:center;
+}
+.card-cta:hover{
+  transform:translateX(4px);
+}
+.cta-arrow{
+  transition:transform 0.3s;
+  font-size:16px;
+}
+.card:hover .cta-arrow{transform:translateX(6px);}
+
+/* STATS BAR */
+.stats-bar{
+  position:relative;z-index:1;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:0;
+  margin:0 20px 60px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  max-width:900px;
+  margin-left:auto;margin-right:auto;
+}
+.stat{
+  flex:1;min-width:120px;
+  padding:20px 16px;
+  text-align:center;
+  border-right:1px solid var(--border);
+  background:rgba(255,255,255,0.015);
+  transition:background 0.3s;
+}
+.stat:last-child{border-right:none;}
+.stat:hover{background:rgba(0,255,231,0.03);}
+.stat-val{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(16px,3vw,24px);
+  font-weight:900;
+  margin-bottom:4px;
+}
+.stat-label{
+  font-size:10px;
+  color:rgba(224,240,255,0.4);
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+/* scrolling ticker */
+.ticker-wrap{
+  position:relative;z-index:1;
+  overflow:hidden;
+  background:rgba(0,255,231,0.04);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:10px 0;
+  margin-bottom:60px;
+}
+.ticker{
+  display:flex;
+  white-space:nowrap;
+  animation:ticker-scroll 30s linear infinite;
+}
+@keyframes ticker-scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.ticker-item{
+  font-family:'Orbitron',monospace;
+  font-size:10px;letter-spacing:2px;
+  color:rgba(0,255,231,0.5);
+  padding:0 40px;
+}
+.ticker-sep{color:var(--c4);padding:0 8px;}
+
+/* FOOTER */
+footer{
+  position:relative;z-index:1;
+  text-align:center;
+  padding:40px 20px;
+  border-top:1px solid var(--border);
+}
+.footer-logo{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(16px,4vw,24px);
+  font-weight:900;
+  color:var(--c1);
+  margin-bottom:8px;
+  background:linear-gradient(90deg,var(--c1),var(--c4));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.footer-sub{
+  font-size:11px;
+  color:rgba(224,240,255,0.3);
+  letter-spacing:3px;
+  margin-bottom:20px;
+}
+.footer-links{
+  display:flex;justify-content:center;gap:20px;flex-wrap:wrap;
+}
+.footer-link{
+  font-family:'Orbitron',monospace;
+  font-size:9px;letter-spacing:2px;
+  color:rgba(0,255,231,0.4);
+  text-decoration:none;
+  padding:6px 14px;
+  border:1px solid rgba(0,255,231,0.15);
+  border-radius:4px;
+  transition:all 0.3s;
+}
+.footer-link:hover{
+  color:var(--c1);
+  border-color:var(--c1);
+  background:rgba(0,255,231,0.05);
+}
+
+/* MOBILE TOUCH */
+@media(hover:none){
+  .card{animation:card-float 6s ease-in-out infinite !important;}
+  .card:active{
+    transform:scale(0.97) !important;
+    border-color:rgba(0,255,231,0.4) !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<nav>
+  <div class="lab-logo">
+    <div class="logo-icon">⬡</div>
+    <div>
+      <div class="logo-text">NANO TRANSLATION LAB</div>
+      <div class="logo-sub">Pharmaceutical Nanotechnology</div>
+    </div>
+  </div>
+  <div class="nav-tag">SLN RESEARCH PORTAL</div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">
+    <div class="eyebrow-dot"></div>
+    RESVERATROL SLN — COMPLETE SCIENTIFIC VISUALIZATION
+    <div class="eyebrow-dot"></div>
+  </div>
+  <div class="hero-title">NANO<br>TRANSLATION</div>
+  <div class="hero-title-line2">L A B O R A T O R Y</div>
+
+  <canvas id="heroMolCanvas"></canvas>
+
+  <p class="hero-desc">
+    A complete molecular-level scientific portal for Resveratrol-loaded Solid Lipid Nanoparticles.
+    Explore every phase transition, interfacial event, crystallization mechanism, and release kinetic —
+    fully animated and interactive.
+  </p>
+</div>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <span class="ticker-item">STEARIC ACID LIPID MATRIX</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">OLEIC ACID LATTICE DISRUPTOR</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">RESVERATROL log P = 3.1</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">ACOUSTIC CAVITATION 20–40 kHz</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">DEFECT-MEDIATED ENTRAPMENT</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">HIGUCHI RELEASE KINETICS</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">POLOXAMER 188 STERIC BRUSH</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">KORSMEYER-PEPPAS n = 0.45–0.65</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">LYOPHILIZATION CRYOPROTECTION</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">pH 1.2 SIMULATED GASTRIC FLUID</span><span class="ticker-sep">◈</span>
+    <!-- duplicate for seamless loop -->
+    <span class="ticker-item">STEARIC ACID LIPID MATRIX</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">OLEIC ACID LATTICE DISRUPTOR</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">RESVERATROL log P = 3.1</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">ACOUSTIC CAVITATION 20–40 kHz</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">DEFECT-MEDIATED ENTRAPMENT</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">HIGUCHI RELEASE KINETICS</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">POLOXAMER 188 STERIC BRUSH</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">KORSMEYER-PEPPAS n = 0.45–0.65</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">LYOPHILIZATION CRYOPROTECTION</span><span class="ticker-sep">◈</span>
+    <span class="ticker-item">pH 1.2 SIMULATED GASTRIC FLUID</span><span class="ticker-sep">◈</span>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-val" style="color:var(--c1)">13</div>
+    <div class="stat-label">Process Steps</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val" style="color:var(--c3)">228 Da</div>
+    <div class="stat-label">Resveratrol MW</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val" style="color:var(--c2)">75–80°C</div>
+    <div class="stat-label">Melt Temperature</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val" style="color:var(--c4)">100–300nm</div>
+    <div class="stat-label">Particle Size</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val" style="color:var(--c5)">24h</div>
+    <div class="stat-label">Release Study</div>
+  </div>
+</div>
+
+<!-- CARDS -->
+<div class="cards-section">
+  <div class="cards-label">◈ SELECT YOUR VISUALIZATION MODULE ◈</div>
+  <div class="cards-grid">
+
+    <!-- CARD 1 -->
+    <a href="SLN_animated_molecular_science.html" class="card card1">
+      <div class="card-num">
+        <div class="card-num-badge" style="background:rgba(0,255,231,0.1);border:2px solid var(--c1);color:var(--c1);">01</div>
+        <span style="color:rgba(0,255,231,0.5);font-size:9px;letter-spacing:3px;">ANIMATED SCIENCE</span>
+      </div>
+      <div class="card-canvas-wrap">
+        <canvas id="card1Canvas"></canvas>
+      </div>
+      <div class="card-title" style="color:var(--c1)">Molecular Animation<br>Deep Dive</div>
+      <div class="card-desc">
+        8 fully animated canvas scenes showing every molecular event — cavitation, crystallization, drug partitioning, surfactant adsorption. Interactive buttons control each animation stage.
+      </div>
+      <div class="card-tags">
+        <span class="tag" style="color:var(--c1);border-color:rgba(0,255,231,0.3)">ANIMATED</span>
+        <span class="tag" style="color:var(--c3);border-color:rgba(255,215,0,0.3)">INTERACTIVE</span>
+        <span class="tag" style="color:var(--c5);border-color:rgba(0,255,136,0.3)">8 CANVASES</span>
+        <span class="tag" style="color:var(--c4);border-color:rgba(180,79,255,0.3)">MOLECULAR</span>
+      </div>
+      <div class="card-cta" style="color:var(--c1);border-color:rgba(0,255,231,0.4);background:rgba(0,255,231,0.05);">
+        LAUNCH MODULE <span class="cta-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- CARD 2 -->
+    <a href="resveratrol_SLN_deep_explanation.html" class="card card2">
+      <div class="card-num">
+        <div class="card-num-badge" style="background:rgba(180,79,255,0.1);border:2px solid var(--c4);color:var(--c4);">02</div>
+        <span style="color:rgba(180,79,255,0.5);font-size:9px;letter-spacing:3px;">DEEP PROTOCOL</span>
+      </div>
+      <div class="card-canvas-wrap">
+        <canvas id="card2Canvas"></canvas>
+      </div>
+      <div class="card-title" style="color:var(--c4)">Step-by-Step Protocol<br>with SVG Diagrams</div>
+      <div class="card-desc">
+        Complete 8-step formulation protocol with static SVG molecular diagrams, crystal lattice comparisons, surfactant shell diagrams, and release kinetic modeling guide.
+      </div>
+      <div class="card-tags">
+        <span class="tag" style="color:var(--c4);border-color:rgba(180,79,255,0.3)">PROTOCOL</span>
+        <span class="tag" style="color:var(--c2);border-color:rgba(255,107,53,0.3)">SVG DIAGRAMS</span>
+        <span class="tag" style="color:var(--c3);border-color:rgba(255,215,0,0.3)">THESIS READY</span>
+        <span class="tag" style="color:var(--c5);border-color:rgba(0,255,136,0.3)">KINETICS</span>
+      </div>
+      <div class="card-cta" style="color:var(--c4);border-color:rgba(180,79,255,0.4);background:rgba(180,79,255,0.05);">
+        LAUNCH MODULE <span class="cta-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">NANO TRANSLATION LAB</div>
+  <div class="footer-sub">PHARMACEUTICAL NANOTECHNOLOGY RESEARCH PORTAL</div>
+  <div class="footer-links">
+    <a href="SLN_animated_molecular_science.html" class="footer-link">MODULE 01 — ANIMATED</a>
+    <a href="resveratrol_SLN_deep_explanation.html" class="footer-link">MODULE 02 — PROTOCOL</a>
+  </div>
+</footer>
+
+<script>
+// ═══════════════════════════
+// BACKGROUND PARTICLE SYSTEM
+// ═══════════════════════════
+const bgCanvas = document.getElementById('bgCanvas');
+const bctx = bgCanvas.getContext('2d');
+let bW, bH, bParticles=[], bTime=0;
+
+function resizeBg(){
+  bW = bgCanvas.width = window.innerWidth;
+  bH = bgCanvas.height = window.innerHeight;
+}
+resizeBg();
+window.addEventListener('resize', resizeBg);
+
+// Create molecular-themed particles
+for(let i=0;i<120;i++){
+  bParticles.push({
+    x:Math.random()*window.innerWidth,
+    y:Math.random()*window.innerHeight,
+    vx:(Math.random()-0.5)*0.3,
+    vy:(Math.random()-0.5)*0.3,
+    r:Math.random()*2+0.5,
+    type:Math.floor(Math.random()*5),
+    alpha:Math.random()*0.5+0.1,
+    pulse:Math.random()*Math.PI*2,
+    connected:[],
+  });
+}
+
+const pColors=['#00ffe7','#ff6b35','#ffd700','#b44fff','#00ff88'];
+
+function drawBg(){
+  bctx.clearRect(0,0,bW,bH);
+  bTime+=0.008;
+
+  // Ambient glow blobs
+  const glows=[
+    {x:bW*0.15,y:bH*0.3,r:300,c:'rgba(0,255,231,0.025)'},
+    {x:bW*0.85,y:bH*0.7,r:250,c:'rgba(180,79,255,0.03)'},
+    {x:bW*0.5,y:bH*0.5,r:200,c:'rgba(0,255,136,0.015)'},
+  ];
+  glows.forEach(g=>{
+    const gr=bctx.createRadialGradient(
+      g.x+Math.sin(bTime*0.3)*30,
+      g.y+Math.cos(bTime*0.4)*20,0,
+      g.x,g.y,g.r
+    );
+    gr.addColorStop(0,g.c);
+    gr.addColorStop(1,'transparent');
+    bctx.fillStyle=gr;
+    bctx.fillRect(0,0,bW,bH);
+  });
+
+  // Connection lines
+  bParticles.forEach((p,i)=>{
+    bParticles.slice(i+1,i+8).forEach(p2=>{
+      const d=Math.sqrt((p.x-p2.x)**2+(p.y-p2.y)**2);
+      if(d<100){
+        bctx.beginPath();
+        bctx.moveTo(p.x,p.y);bctx.lineTo(p2.x,p2.y);
+        bctx.strokeStyle=`rgba(0,255,231,${0.06*(1-d/100)})`;
+        bctx.lineWidth=0.5;bctx.stroke();
+      }
+    });
+  });
+
+  // Particles
+  bParticles.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;
+    p.pulse+=0.02;
+    if(p.x<0)p.x=bW;if(p.x>bW)p.x=0;
+    if(p.y<0)p.y=bH;if(p.y>bH)p.y=0;
+    const a=p.alpha*(0.7+Math.sin(p.pulse)*0.3);
+    bctx.beginPath();
+    bctx.arc(p.x,p.y,p.r*(0.9+Math.sin(p.pulse*1.5)*0.1),0,Math.PI*2);
+    bctx.fillStyle=pColors[p.type]+Math.round(a*255).toString(16).padStart(2,'0');
+    bctx.fill();
+  });
+
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+
+// ═══════════════════════════
+// HERO MOLECULE CANVAS
+// ═══════════════════════════
+const heroMol = document.getElementById('heroMolCanvas');
+heroMol.width = heroMol.offsetWidth || 600;
+heroMol.height = heroMol.offsetHeight || 260;
+const hmCtx = heroMol.getContext('2d');
+let hmTime = 0;
+let hmSLNs = [];
+
+// Create 3 SLN particles
+for(let i=0;i<3;i++){
+  hmSLNs.push({
+    x: heroMol.width*(0.2+i*0.3),
+    y: heroMol.height*0.5,
+    r: 30+i*8,
+    phase: i*(Math.PI*2/3),
+    vx:(Math.random()-0.5)*0.4,
+    vy:(Math.random()-0.5)*0.2,
+    drugs:[],
+    numSurf:8+i*3,
+  });
+  for(let d=0;d<3;d++){
+    hmSLNs[i].drugs.push({phase:d*(Math.PI*2/3),speed:0.4+Math.random()*0.3,r:10+Math.random()*10});
+  }
+}
+
+function drawHeroMol(){
+  const W=heroMol.width, H=heroMol.height;
+  hmCtx.clearRect(0,0,W,H);
+  hmTime+=0.025;
+
+  hmSLNs.forEach((sln,si)=>{
+    // Drift
+    sln.x+=sln.vx;sln.y+=sln.vy;
+    if(sln.x<sln.r||sln.x>W-sln.r)sln.vx*=-1;
+    if(sln.y<sln.r||sln.y>H-sln.r)sln.vy*=-1;
+
+    // Glow
+    const glow=hmCtx.createRadialGradient(sln.x,sln.y,0,sln.x,sln.y,sln.r*1.8);
+    const colors=['rgba(0,255,231','rgba(180,79,255','rgba(255,107,53'];
+    glow.addColorStop(0,colors[si]+',0.12)');
+    glow.addColorStop(1,colors[si]+',0)');
+    hmCtx.beginPath();hmCtx.arc(sln.x,sln.y,sln.r*1.8,0,Math.PI*2);
+    hmCtx.fillStyle=glow;hmCtx.fill();
+
+    // Core
+    hmCtx.beginPath();hmCtx.arc(sln.x,sln.y,sln.r,0,Math.PI*2);
+    const core=hmCtx.createRadialGradient(sln.x,sln.y,0,sln.x,sln.y,sln.r);
+    core.addColorStop(0,colors[si]+',0.18)');
+    core.addColorStop(1,colors[si]+',0.04)');
+    hmCtx.fillStyle=core;hmCtx.fill();
+    const borderColors=['rgba(0,255,231','rgba(180,79,255','rgba(255,107,53'];
+    hmCtx.strokeStyle=borderColors[si]+`,${0.4+Math.sin(hmTime+si)*0.2})`;
+    hmCtx.lineWidth=1.5;hmCtx.stroke();
+
+    // Surfactant shell (rotating)
+    for(let s=0;s<sln.numSurf;s++){
+      const ang=(s/sln.numSurf)*Math.PI*2+hmTime*(0.2+si*0.05);
+      const tx=sln.x+Math.cos(ang)*(sln.r-2);
+      const ty=sln.y+Math.sin(ang)*(sln.r-2);
+      const hx=sln.x+Math.cos(ang)*(sln.r+12);
+      const hy=sln.y+Math.sin(ang)*(sln.r+12);
+      hmCtx.beginPath();hmCtx.moveTo(tx,ty);hmCtx.lineTo(hx,hy);
+      hmCtx.strokeStyle='rgba(0,255,136,0.5)';hmCtx.lineWidth=1.5;hmCtx.stroke();
+      hmCtx.beginPath();hmCtx.arc(hx,hy,3,0,Math.PI*2);
+      hmCtx.fillStyle='rgba(0,255,136,0.5)';hmCtx.fill();
+    }
+
+    // Drug molecules orbiting
+    sln.drugs.forEach(d=>{
+      d.phase+=d.speed*0.03;
+      const dx=sln.x+Math.cos(d.phase)*d.r;
+      const dy=sln.y+Math.sin(d.phase)*d.r;
+      hmCtx.beginPath();hmCtx.arc(dx,dy,5,0,Math.PI*2);
+      hmCtx.fillStyle='rgba(255,215,0,0.85)';hmCtx.fill();
+      hmCtx.strokeStyle='rgba(255,215,0,0.3)';hmCtx.lineWidth=1;hmCtx.stroke();
+    });
+
+    // Label
+    const lblColors=['#00ffe7','#b44fff','#ff6b35'];
+    hmCtx.fillStyle=lblColors[si];
+    hmCtx.font=`bold ${8+si}px Orbitron`;
+    hmCtx.textAlign='center';
+    hmCtx.fillText('SLN',sln.x,sln.y+4);
+    hmCtx.fillStyle='rgba(224,240,255,0.4)';
+    hmCtx.font='8px Exo 2';
+    hmCtx.fillText(`~${160+si*40}nm`,sln.x,sln.y+H*0.38);
+  });
+
+  // Trail lines between SLNs
+  hmSLNs.forEach((s1,i)=>{
+    hmSLNs.slice(i+1).forEach(s2=>{
+      const d=Math.sqrt((s1.x-s2.x)**2+(s1.y-s2.y)**2);
+      if(d<200){
+        hmCtx.beginPath();hmCtx.moveTo(s1.x,s1.y);hmCtx.lineTo(s2.x,s2.y);
+        hmCtx.strokeStyle=`rgba(0,255,231,${0.08*(1-d/200)})`;
+        hmCtx.lineWidth=1;hmCtx.setLineDash([3,6]);hmCtx.stroke();
+        hmCtx.setLineDash([]);
+      }
+    });
+  });
+
+  requestAnimationFrame(drawHeroMol);
+}
+drawHeroMol();
+window.addEventListener('resize',()=>{
+  heroMol.width=heroMol.offsetWidth||600;
+  heroMol.height=heroMol.offsetHeight||260;
+});
+
+// ═══════════════════════════
+// CARD 1 CANVAS — Animated sonication / nanoparticles
+// ═══════════════════════════
+const c1 = document.getElementById('card1Canvas');
+c1.width=c1.offsetWidth||400; c1.height=140;
+const c1ctx=c1.getContext('2d');
+let c1t=0, c1bubbles=[], c1nano=[];
+for(let i=0;i<12;i++) c1nano.push({
+  x:20+Math.random()*(c1.width-40),
+  y:20+Math.random()*100,
+  vx:(Math.random()-0.5)*1,
+  vy:(Math.random()-0.5)*0.6,
+  r:4+Math.random()*6,
+  phase:Math.random()*Math.PI*2
+});
+
+function drawCard1(){
+  c1.width=c1.offsetWidth||400;
+  const W=c1.width,H=140;
+  c1ctx.clearRect(0,0,W,H);
+  c1t+=0.04;
+
+  // Background
+  c1ctx.fillStyle='rgba(0,10,20,0.8)';c1ctx.fillRect(0,0,W,H);
+
+  // Probe at top
+  c1ctx.fillStyle='rgba(100,116,139,0.6)';
+  c1ctx.fillRect(W/2-6,0,12,25);
+  c1ctx.fillRect(W/2-3,20,6,15);
+
+  // Acoustic waves
+  for(let w=0;w<5;w++){
+    const wr=(c1t*60+w*50)%220;
+    c1ctx.beginPath();c1ctx.arc(W/2,35,wr,0,Math.PI*2);
+    c1ctx.strokeStyle=`rgba(0,255,231,${0.25*(1-wr/220)})`;
+    c1ctx.lineWidth=1;c1ctx.stroke();
+  }
+
+  // Cavitation bubbles
+  if(Math.random()<0.12&&c1bubbles.length<20){
+    c1bubbles.push({x:60+Math.random()*(W-120),y:40+Math.random()*80,r:0,maxR:5+Math.random()*8,grow:true,a:1});
+  }
+  c1bubbles=c1bubbles.filter(b=>b.a>0.05);
+  c1bubbles.forEach(b=>{
+    if(b.grow){b.r+=0.6;if(b.r>=b.maxR)b.grow=false;}
+    else{b.r-=1.5;b.a-=0.06;}
+    c1ctx.beginPath();c1ctx.arc(b.x,b.y,Math.max(0,b.r),0,Math.PI*2);
+    c1ctx.strokeStyle=`rgba(255,215,0,${b.a})`;c1ctx.lineWidth=1.2;c1ctx.stroke();
+    if(!b.grow&&b.r<2){
+      c1ctx.beginPath();c1ctx.arc(b.x,b.y,12,0,Math.PI*2);
+      c1ctx.fillStyle=`rgba(255,215,0,${b.a*0.3})`;c1ctx.fill();
+    }
+  });
+
+  // Nanoparticles
+  c1nano.forEach(n=>{
+    n.x+=n.vx;n.y+=n.vy;n.phase+=0.04;
+    if(n.x<n.r||n.x>W-n.r)n.vx*=-1;
+    if(n.y<n.r+30||n.y>H-n.r)n.vy*=-1;
+    c1ctx.beginPath();c1ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+    const g=c1ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r);
+    g.addColorStop(0,'rgba(0,255,231,0.4)');g.addColorStop(1,'rgba(0,255,231,0.05)');
+    c1ctx.fillStyle=g;c1ctx.fill();
+    c1ctx.strokeStyle=`rgba(0,255,231,${0.4+Math.sin(c1t+n.phase)*0.2})`;
+    c1ctx.lineWidth=1;c1ctx.stroke();
+  });
+
+  c1ctx.fillStyle='rgba(0,255,231,0.5)';c1ctx.font='8px Orbitron';c1ctx.textAlign='center';
+  c1ctx.fillText('ACOUSTIC CAVITATION → NANOPARTICLES',W/2,H-8);
+  requestAnimationFrame(drawCard1);
+}
+drawCard1();
+
+// ═══════════════════════════
+// CARD 2 CANVAS — Crystal lattice + drug trapping
+// ═══════════════════════════
+const c2=document.getElementById('card2Canvas');
+c2.width=c2.offsetWidth||400; c2.height=140;
+const c2ctx=c2.getContext('2d');
+let c2t=0, c2prog=0;
+
+function drawCard2(){
+  c2.width=c2.offsetWidth||400;
+  const W=c2.width,H=140;
+  c2ctx.clearRect(0,0,W,H);
+  c2t+=0.02;c2prog=(c2prog+0.003)%1;
+
+  c2ctx.fillStyle='rgba(0,5,15,0.8)';c2ctx.fillRect(0,0,W,H);
+
+  // Crystal lattice
+  const cols=Math.floor(W/20);
+  for(let i=0;i<cols;i++){
+    const x=10+i*20;
+    const isOleic=(i%5===2||i%5===4);
+    c2ctx.strokeStyle=isOleic?'rgba(255,107,53,0.5)':'rgba(180,79,255,0.35)';
+    c2ctx.lineWidth=isOleic?2:1.5;
+    c2ctx.beginPath();
+    if(isOleic){
+      c2ctx.moveTo(x,10);c2ctx.lineTo(x,50);
+      c2ctx.lineTo(x+10+Math.sin(c2t)*3,70);
+      c2ctx.lineTo(x,90);c2ctx.lineTo(x,125);
+    } else {
+      c2ctx.moveTo(x,10);c2ctx.lineTo(x+Math.sin(c2t*0.5+i)*2,125);
+    }
+    c2ctx.stroke();
+    // COOH head
+    c2ctx.beginPath();c2ctx.arc(x,10,3,0,Math.PI*2);
+    c2ctx.fillStyle=isOleic?'rgba(255,107,53,0.5)':'rgba(180,79,255,0.4)';
+    c2ctx.fill();
+  }
+
+  // Drug molecules animating into defects
+  const drugPositions=[];
+  for(let i=0;i<cols;i++){if(i%5===3)drugPositions.push(10+i*20);}
+  drugPositions.forEach((dx,idx)=>{
+    const prog=(c2prog+idx*0.3)%1;
+    const dy=10+prog*115;
+    const alpha=Math.sin(prog*Math.PI);
+    c2ctx.beginPath();c2ctx.arc(dx,dy,5,0,Math.PI*2);
+    const dg=c2ctx.createRadialGradient(dx,dy,0,dx,dy,5);
+    dg.addColorStop(0,`rgba(255,215,0,${alpha*0.9})`);
+    dg.addColorStop(1,`rgba(255,215,0,${alpha*0.1})`);
+    c2ctx.fillStyle=dg;c2ctx.fill();
+  });
+
+  c2ctx.fillStyle='rgba(180,79,255,0.6)';c2ctx.font='8px Orbitron';c2ctx.textAlign='center';
+  c2ctx.fillText('CRYSTAL LATTICE — DEFECT ENTRAPMENT',W/2,H-8);
+  requestAnimationFrame(drawCard2);
+}
+drawCard2();
+
+window.addEventListener('resize',()=>{
+  c1.width=c1.offsetWidth||400;
+  c2.width=c2.offsetWidth||400;
+});
+</script>
+</body>
+</html>
